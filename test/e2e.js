@@ -67,6 +67,8 @@ function yahoo(t) {
   await page.fill('#t-q', '100'); await page.fill('#t-n', 'big tech');
   await page.click('[data-act=placeOrder]'); await page.waitForTimeout(300);
   ok(await page.locator('text=100 AAPL').count() >= 1, 'order queued');
+  await page.waitForTimeout(500);
+  ok(await page.locator('text=since placed').count() >= 1, 'queued order shows live gain/loss since placed');
   // second order, then third should hit the 2/day cap
   await page.click('[data-act=newTrade]'); await page.fill('#t-tk', 'QQQ'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b'); await page.fill('#t-q', '10'); await page.click('[data-act=placeOrder]'); await page.waitForTimeout(200);
   await page.click('[data-act=newTrade]'); await page.fill('#t-tk', 'NVDA'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b'); await page.fill('#t-q', '5'); await page.click('[data-act=placeOrder]');

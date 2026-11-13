@@ -5,7 +5,7 @@ const ACT = {
   home() { leaveGame(); S.view = 'home'; sched(); },
   settings() { openSettings(); },
   closeSheet() { closeSheet(); },
-  tab(el) { S.tab = el.dataset.v; sched(); window.scrollTo(0, 0); },
+  tab(el) { S.tab = el.dataset.v; sched(); window.scrollTo(0, 0); liveRefresh(); },
   newGame() { S.view = 'create'; sched(); },
   joinSheet() { openJoin(); },
   openGame(el) { const g = gamesList()[+el.dataset.i]; if (g) guard(() => openGame(g)); },

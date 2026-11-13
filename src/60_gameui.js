@@ -122,7 +122,10 @@ function tabTrade() {
   h += '<div class="sec">Queued orders</div>';
   if (!pend.length) h += '<div class="card mut small">Nothing queued.</div>';
   else {
-    h += '<div class="card">' + pend.map(o => { const fdo = fillDayFor(typeof o.ts === 'number' ? o.ts : Date.now()); return '<div class="fillrow"><span class="tag ' + o.s + '">' + o.s.toUpperCase() + '</span><span><b>' + o.q + ' ' + esc(o.t) + '</b> <span class="mut small">· ' + dayLabel(fdo) + ' close</span>' + (o.n ? '<div class="mut small">' + esc(o.n) + '</div>' : '') + '</span><button class="btn sm" data-act="cancelOrder" data-id="' + esc(o.id) + '">Cancel</button></div>'; }).join('') + '</div>';
+    let qpl = 0, qn = 0;
+    const live = o => { const L = liveOf(o.t); if (L == null) return ''; let t = ' <span class="mut small">· now ' + money(L) + '</span>'; if (o.p > 0) { const d = (o.s === 'buy' ? L - o.p : o.p - L) * o.q; qpl += d; qn++; t += ' <span class="small ' + (d >= 0 ? 'up' : 'dn') + '">' + (d >= 0 ? '+' : '') + money0(d) + ' since placed</span>'; } return t; };
+    const rowsQ = pend.map(o => { const fdo = fillDayFor(typeof o.ts === 'number' ? o.ts : Date.now()); return '<div class="fillrow"><span class="tag ' + o.s + '">' + o.s.toUpperCase() + '</span><span><b>' + o.q + ' ' + esc(o.t) + '</b> <span class="mut small">· ' + dayLabel(fdo) + ' close</span><div>' + live(o) + '</div>' + (o.n ? '<div class="mut small">' + esc(o.n) + '</div>' : '') + '</span><button class="btn sm" data-act="cancelOrder" data-id="' + esc(o.id) + '">Cancel</button></div>'; }).join('');
+    h += '<div class="card">' + (qn ? '<div class="row sp small" style="padding-bottom:6px"><span class="mut">Live estimate if filled now</span><b class="num ' + (qpl >= 0 ? 'up' : 'dn') + '">' + (qpl >= 0 ? '+' : '') + money0(qpl) + '</b></div>' : '') + rowsQ + '<div class="mut small" style="margin-top:6px">Estimate only. Real fills happen at the close.</div></div>';
     if (S.game.mode !== 'fb') h += '<button class="btn block" style="margin-top:10px" data-act="cardSheet">Share as trade card…</button>';
   }
   h += '<div class="sec">Positions</div>';
@@ -251,7 +254,8 @@ async function placeOrder() {
   const o = { s: TR.side, t: TR.d.t, q, n: ($('#t-n').value || '').trim().slice(0, 100) };
   const err = checkClient(o);
   if (err) { msg.innerHTML = '<div class="note bad">' + esc(err) + '</div>'; return; }
-  await W.set('orders/' + ME() + '/' + newId(), { s: o.s, t: o.t, q: o.q, n: o.n, ts: NOW() });
+  const ord = { s: o.s, t: o.t, q: o.q, n: o.n, ts: NOW() }; if (TR.d && TR.d.last > 0) ord.p = Math.round(TR.d.last * 100) / 100;
+  await W.set('orders/' + ME() + '/' + newId(), ord);
   closeSheet(); toast((o.s === 'buy' ? 'Buy ' : 'Sell ') + o.q + ' ' + o.t + ' queued'); S.tab = 'trade'; sched();
 }
 
@@ -285,3 +289,20 @@ function openPlayerSheet(pid) {
     '<div class="kpis" style="margin-top:12px"><div class="kpi"><small>Total</small><b class="num">' + money0(tot) + '</b></div><div class="kpi"><small>Cash</small><b class="num">' + money0(pf.cash) + '</b></div><div class="kpi"><small>Invested</small><b class="num">' + (tot ? Math.round(inv / tot * 100) : 0) + '%</b></div></div>' +
     '<div class="card" style="margin-top:12px">' + (rows.length ? rows.map(x => { const pl = x.v - x.c; return '<div class="row sp" style="padding:7px 0"><span><b>' + esc(x.t) + '</b> <span class="mut small">' + x.q + ' sh @ ' + money(x.c / x.q) + ' avg</span></span><span class="num" style="text-align:right">' + money0(x.v) + '<div class="small ' + (pl >= 0 ? 'up' : 'dn') + '">' + (pl >= 0 ? '+' : '') + money0(pl) + ' (' + pctTxt(retPct(x.v, x.c)) + ')</div></span></div>'; }).join('') : '<div class="mut small">All cash, no positions.</div>') + '</div>');
 }
+
+// ── live prices for the Trade tab (positions + queued tickers), refreshed while it is open ──
+function liveOf(t) { const c = barCache[t]; return c && c.data && c.data.last > 0 ? c.data.last : null; }
+let liveBusy = false;
+async function liveRefresh() {
+  if (liveBusy || S.view !== 'game' || S.tab !== 'trade' || document.hidden) return;
+  const m = META(); if (!m || m.status !== 'active' || !S.G.players[ME()]) return;
+  const ts = new Set(Object.keys(myPortfolio().pos)); pendingFor(ME()).forEach(o => ts.add(o.t));
+  if (!ts.size) return;
+  liveBusy = true;
+  try {
+    const before = JSON.stringify([...ts].map(liveOf));
+    await Promise.all([...ts].map(t => getBars(t).catch(() => null)));
+    if (JSON.stringify([...ts].map(liveOf)) !== before && S.tab === 'trade' && !$('#sheet-root.on')) sched();
+  } finally { liveBusy = false; }
+}
+setInterval(liveRefresh, 60000);
