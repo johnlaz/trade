@@ -2,7 +2,15 @@
 
 **Same cash. Same rules. Best trader wins.**
 
-A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and orders fill at the closing price. Single-file PWA (`app/index.html`), no build step.
+A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and orders fill at the closing price. Single-file PWA (`app/index.html`).
+
+| | |
+|---|---|
+| Landing page | https://johnlaz.github.io/trade/ |
+| App | https://johnlaz.github.io/trade/app/ |
+| Join link format | `https://johnlaz.github.io/trade/app/?join=CODE` |
+
+![Leaderboard](app/shot-wide.png)
 
 ## How a game works
 
@@ -47,6 +55,17 @@ Daily bars come from Yahoo Finance's public chart endpoint through free CORS pro
 - Market holidays: if SPY has no bar for a day, the host is asked whether to skip it.
 - Honor system for offline cards: the host can see exactly what each card contains before importing.
 
+## Data and privacy
+
+- No accounts. Online players are signed in anonymously by Firebase, and a name is all that is shown.
+- Game data (players, portfolios, fills, prices, daily equity) lives in your Firebase Realtime Database under `games/{CODE}`. Pending orders are readable only by their owner and the host.
+- The Groq key, model choice, watchlist and any proxy URL stay in the host's browser and are never written to Firebase or to exports.
+- Delete a game from Host → Danger zone to remove its data from Firebase.
+
+## Deploy and update
+
+Push the repo root to GitHub Pages (Settings → Pages → `main` / root). To change the app: edit the parts in `src/`, run `./build.sh` (rebuilds `app/index.html`, stamps the service worker cache with the version from `src/20_data.js`, checks that every precached file and manifest asset exists), run the tests, push. Bump `APP_VERSION` in `src/20_data.js` for each release so installed copies update.
+
 ## Repo layout
 
 ```
@@ -56,10 +75,14 @@ Daily bars come from Yahoo Finance's public chart endpoint through free CORS pro
 /app/index.html      the app (single file)
 /app/manifest.json   PWA manifest
 /app/sw.js           service worker
-/app/icon-192.png, icon-512.png, shot-phone-*.png
-/src, /test, build.sh   source parts, tests, concatenation script (optional to deploy)
+/app/icon-192.png, icon-512.png, shot-wide.png, shot-phone-*.png
+/src, /test, build.sh   source parts, tests, build script (not needed to run the app)
 ```
 
 Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test.js` for the rules tests.
 
-&copy; LAZLAB Creations
+## Changelog
+
+- **1.0.0**: first release. Green theme and app icon, online and offline (trade card) play, AI player with Groq model picker, daily-close settling, SPY benchmark, AI debrief.
+
+&copy; 2026 LAZLAB Creations. All Rights Reserved.

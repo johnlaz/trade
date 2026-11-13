@@ -22,6 +22,7 @@ function openSheet(html, bind) {
   const root = $('#sheet-root');
   root.innerHTML = '<div class="scrim" data-act="closeSheet"></div><div class="sheet" role="dialog" aria-modal="true"><button class="icon-btn" data-act="closeSheet" aria-label="Close" style="position:absolute;right:12px;top:12px;width:34px;height:34px;font-size:16px">\u2715</button><div class="grip"></div>' + html + '</div>';
   root.classList.add('on');
+  linkLabels(root);
   if (bind) bind(root.querySelector('.sheet'));
 }
 function closeSheet() { const r = $('#sheet-root'); r.classList.remove('on'); r.innerHTML = ''; }
@@ -34,11 +35,24 @@ function render() {
   else if (S.view === 'create') html = viewCreate();
   else if (S.view === 'game') html = viewGame();
   app.innerHTML = html + (S.busy ? '<div class="overlay"><div><div class="spin"></div><b>' + esc(S.busy) + '</b><div class="mut small" style="margin-top:6px">Keep this screen open.</div></div></div>' : '');
+  linkLabels(app);
   if (S.view === 'game') afterGameRender();
   if (S.view === 'create') afterCreateRender();
 }
+// Associate each form label with the control that follows it (screen readers, tap-to-focus)
+let _lid = 0;
+function linkLabels(root) {
+  root.querySelectorAll('label.f').forEach(l => {
+    if (l.htmlFor) return;
+    const n = l.nextElementSibling;
+    const el = n && (n.matches('input,select,textarea') ? n : n.querySelector('input,select,textarea'));
+    if (!el) return;
+    if (!el.id) el.id = 'f' + (++_lid);
+    l.htmlFor = el.id;
+  });
+}
 function footer() {
-  return '<div class="foot">Trade Arena v' + APP_VERSION + ' · © LAZLAB Creations · <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">Note to self</a><br>Paper trading only. Not financial advice.</div>';
+  return '<div class="foot">Trade Arena v' + APP_VERSION + ' · © 2026 LAZLAB Creations · <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">Note to self</a><br>Paper trading only. Not financial advice.</div>';
 }
 
 // ── home ──

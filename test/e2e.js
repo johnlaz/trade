@@ -42,7 +42,8 @@ function yahoo(t) {
   await page.click('[data-act=newGame]');
   await page.fill('#c-name', 'Test Game'); await page.fill('#c-me', 'John');
   await page.fill('#c-tr', '2'); await page.fill('#c-pos', '4'); await page.fill('#c-pct', '50');
-  ok(await page.locator('#c-online').isDisabled(), 'online disabled without firebase');
+  ok(await page.locator('#c-online').isChecked(), 'online play defaults on now that Firebase is configured');
+  await page.uncheck('#c-online');   // this test runs the offline path (no Firebase in the sandbox)
   await page.screenshot({ path: '/tmp/shot-create.png', fullPage: true });
   await page.click('[data-act=doCreate]'); await page.waitForTimeout(500);
   ok(await page.locator('text=Players (2)').count() === 1, 'lobby with host + AI');
@@ -110,6 +111,8 @@ function yahoo(t) {
   // next day: Monday close. orders placed after Friday close fill Monday
   await page.click('[data-act=tab][data-v=board]'); await page.waitForTimeout(300);
   ok(/Mon, Nov 16/.test(await page.innerText('.wrap')), 'next close is Monday');
+  await page.setViewportSize({ width: 1280, height: 720 }); await page.click('[data-act=tab][data-v=board]'); await page.waitForTimeout(400);
+  await page.screenshot({ path: 'app/shot-wide.png', scale: 'css' });
   ok(errors.length === 0, 'no page errors: ' + errors.join(' | '));
   await browser.close();
   console.log(fails ? '\n' + fails + ' FAILED' : '\nAll e2e passed'); process.exit(fails ? 1 : 0);

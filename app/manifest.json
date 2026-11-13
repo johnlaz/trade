@@ -8,13 +8,46 @@
   "orientation": "portrait",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
-  "categories": ["finance", "games", "education"],
+  "categories": [
+    "finance",
+    "games",
+    "education"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ],
   "screenshots": [
-    { "src": "shot-phone-1.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Leaderboard" },
-    { "src": "shot-phone-2.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Your portfolio and orders" }
+    {
+      "src": "shot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Leaderboard and progress"
+    },
+    {
+      "src": "shot-phone-1.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Leaderboard"
+    },
+    {
+      "src": "shot-phone-2.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Your portfolio and orders"
+    }
   ]
 }
