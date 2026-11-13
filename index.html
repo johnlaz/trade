@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trade Arena: paper-trading game</title>
+<meta name="description" content="Same starting cash, same rules. Play a paper-trading game against friends and an AI player.">
+<meta name="theme-color" content="#0b0f14"><link rel="icon" href="app/icon-192.png">
+<style>
+:root{--bg:#0b0f14;--card:#131b26;--line:#223043;--tx:#e9eff7;--mut:#8c9bb0;--acc:#c8f542}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+.brand{font-weight:900;letter-spacing:.14em;font-size:14px}.brand span{color:var(--acc)}
+h1{font-size:clamp(36px,8vw,60px);line-height:1.03;letter-spacing:-.025em;margin:44px 0 16px;font-weight:900}h1 em{font-style:normal;color:var(--acc)}
+p.lead{color:var(--mut);font-size:18px;max-width:46ch;margin:0 0 26px}
+.btn{display:inline-block;background:var(--acc);color:#101605;font-weight:800;padding:15px 26px;border-radius:14px;text-decoration:none}
+.btn.o{background:var(--card);color:var(--tx);border:1px solid var(--line);margin-left:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:46px 0}
+.c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.c b{display:block;margin-bottom:4px}.c span{color:var(--mut);font-size:14.5px}
+.shots{display:flex;gap:14px;overflow:auto;padding-bottom:8px}.shots img{height:440px;border-radius:18px;border:1px solid var(--line)}
+form{display:flex;gap:8px;margin:26px 0 0;flex-wrap:wrap}
+input{flex:1;min-width:150px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--tx);font:700 18px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase}
+button{padding:14px 22px;border-radius:12px;border:0;background:var(--card);color:var(--tx);font-weight:800;border:1px solid var(--line);cursor:pointer}
+footer{margin-top:50px;color:var(--mut);font-size:13px}footer a{color:var(--mut)}
+</style></head><body><div class="w">
+<div class="brand">TRADE<span>ARENA</span></div>
+<h1>Same cash.<br>Same rules.<br><em>Best trader wins.</em></h1>
+<p class="lead">A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and the closing bell decides who is up.</p>
+<a class="btn" href="app/">Open the app</a><a class="btn o" href="#how">How it works</a>
+<form onsubmit="event.preventDefault();var c=this.c.value.trim().toUpperCase();if(c)location.href='app/?join='+encodeURIComponent(c)"><input name="c" maxlength="6" placeholder="GAME CODE" aria-label="Game code"><button>Join a game</button></form>
+<div class="grid" id="how">
+<div class="c"><b>Equal start</b><span>Pick the starting amount and the time frame: a week, a month, your own end date.</span></div>
+<div class="c"><b>Fair-play limits</b><span>Max trades per day, max positions, and a cap on how much goes into one stock.</span></div>
+<div class="c"><b>An AI opponent</b><span>The host adds an AI player. It sees the same prices and obeys the same limits.</span></div>
+<div class="c"><b>Learn as you go</b><span>Add a one-line "why" to every trade. After each close everyone sees the notes, and the AI coach writes a debrief at the end.</span></div>
+<div class="c"><b>Join anywhere</b><span>Friends join with a code or QR. Offline? Send a trade card file instead.</span></div>
+<div class="c"><b>No account, no cost</b><span>Install it from your browser. Paper money only.</span></div></div>
+<div class="shots"><img src="app/shot-phone-1.png" alt="Leaderboard" loading="lazy"><img src="app/shot-phone-2.png" alt="Portfolio and queued orders" loading="lazy"></div>
+<footer>&copy; LAZLAB Creations &middot; <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">lazlab.io@gmail.com</a><br>Paper trading for fun and learning. Not financial advice.</footer>
+</div></body></html>

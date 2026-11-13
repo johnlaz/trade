@@ -1,0 +1,37 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "games": {
+      "$code": {
+        ".validate": "$code.matches(/^[A-HJ-NP-Z2-9]{6}$/)",
+        ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid",
+        "meta": {
+          ".read": "auth != null",
+          ".write": "auth != null && ((!data.exists() && newData.child('hostUid').val() === auth.uid) || data.child('hostUid').val() === auth.uid)"
+        },
+        "players": {
+          ".read": "auth != null",
+          "$pid": {
+            ".write": "auth != null && (root.child('games/' + $code + '/meta/hostUid').val() === auth.uid || ($pid === auth.uid && (data.exists() || root.child('games/' + $code + '/meta/status').val() === 'lobby')))",
+            ".validate": "newData.child('n').isString() && newData.child('n').val().length <= 24 && (!newData.child('ai').exists() || root.child('games/' + $code + '/meta/hostUid').val() === auth.uid)"
+          }
+        },
+        "orders": {
+          ".read": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid",
+          "$pid": {
+            ".read": "auth != null && $pid === auth.uid",
+            ".write": "auth != null && (root.child('games/' + $code + '/meta/hostUid').val() === auth.uid || ($pid === auth.uid && root.child('games/' + $code + '/meta/status').val() === 'active'))",
+            "$oid": {
+              ".validate": "newData.hasChildren(['s', 't', 'q', 'ts']) && (newData.child('s').val() === 'buy' || newData.child('s').val() === 'sell') && newData.child('t').isString() && newData.child('t').val().matches(/^[A-Z]{1,5}(-[A-Z]{1,2})?$/) && newData.child('q').isNumber() && newData.child('q').val() >= 1 && newData.child('q').val() <= 1000000 && (!newData.child('n').exists() || newData.child('n').val().length <= 140) && (newData.child('ts').val() === now || root.child('games/' + $code + '/meta/hostUid').val() === auth.uid)"
+            }
+          }
+        },
+        "portfolios": { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },
+        "fills":      { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },
+        "prices":     { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },
+        "equity":     { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" }
+      }
+    }
+  }
+}
