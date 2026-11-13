@@ -91,6 +91,9 @@ function yahoo(t) {
   ok(/AI Trader/.test(board) && /John/.test(board) && /Sam/.test(board), 'leaderboard lists all three players');
   ok(/SPY buy/.test(board), 'benchmark row shown');
   // inspect state
+  await page.click('[data-act=viewPlayer]'); await page.waitForTimeout(300);
+  ok(await page.locator('.sheet:has-text("Holdings as of the last settled close")').count() === 1, 'tap a player shows holdings sheet');
+  await page.click('.sheet [data-act=closeSheet]'); await page.waitForTimeout(200);
   const G = await page.evaluate(() => JSON.parse(localStorage.getItem('ta_local_' + gamesList()[0].code)));
   const code = Object.keys(G.fills)[0];
   ok(G.meta.lastSettled === '2026-11-13', 'lastSettled advanced');

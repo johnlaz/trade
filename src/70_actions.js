@@ -115,6 +115,7 @@ const ACT = {
   maxQty() { if (!TR.d) return toast('Look up a ticker first', 'bad'); $('#t-q').value = maxQty() || ''; tradeEstimate(); },
   placeOrder() { guard(placeOrder); },
   cancelOrder(el) { guard(async () => { await W.set('orders/' + ME() + '/' + el.dataset.id, null); }, 'Order cancelled'); },
+  viewPlayer(el) { openPlayerSheet(el.dataset.id); },
   cardSheet() { openCardSheet(); },
   shareCard() { const c = window._card; shareJson(c.fname, c.card, 'Trade card'); },
   emailCard() {
