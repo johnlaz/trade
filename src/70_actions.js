@@ -118,7 +118,7 @@ const ACT = {
   cardSheet() { openCardSheet(); },
   shareCard() { const c = window._card; shareJson(c.fname, c.card, 'Trade card'); },
   emailCard() {
-    const c = window._card; const to = '';
+    const c = window._card; const to = 'lazlab.io@gmail.com';
     location.href = 'mailto:' + to + '?subject=' + encodeURIComponent('Trade card ' + c.card.game + ' — ' + c.card.name) + '&body=' + encodeURIComponent('Paste this into Host → Import trade card:\n\n' + c.json);
   },
   copyCard() { copyText(window._card.json); }

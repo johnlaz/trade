@@ -99,6 +99,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.1.1**: trade card email goes to lazlab.io@gmail.com; Host tab lists every human player's queued orders.
 - **1.1.0**: added a 1-day game (fills at the first close, scored at the next close).
 - **1.0.0**: first release. Green theme and app icon, online and offline (trade card) play, AI player with Groq model picker, daily-close settling, SPY benchmark, AI debrief.
 

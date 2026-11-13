@@ -169,6 +169,10 @@ function tabHost() {
   } else if (S.game.mode === 'local') {
     h += '<div class="sec">Offline players</div><div class="card"><button class="btn sm" data-act="exportGame">Share game file</button></div>';
   }
+  if (m.status === 'active') {
+    const qs = playerIds().filter(pid => !(S.G.players[pid] || {}).ai).map(pid => ({ pid, list: pendingFor(pid) })).filter(x => x.list.length);
+    h += '<div class="sec">Queued orders (fill at the next close)</div><div class="card">' + (qs.length ? qs.map(x => '<div style="padding:6px 0"><b>' + esc(S.G.players[x.pid].n) + '</b>' + x.list.map(o => '<div class="small"><span class="tag ' + o.s + '">' + o.s.toUpperCase() + '</span> ' + o.q + ' ' + esc(o.t) + (o.n ? ' <span class="mut">“' + esc(o.n) + '”</span>' : '') + '</div>').join('') + '</div>').join('') + '<div class="mut small" style="margin-top:6px">Only you can see these. The AI player decides at settle time, so it never shows here.</div>' : '<div class="mut small">Nothing queued yet. Imported trade cards and players\' orders appear here.</div>') + '</div>';
+  }
   h += '<div class="sec">AI player</div><div class="card small"><div class="mut">' + (aiIds().length ? 'The AI takes its turn automatically when you settle each day. It sees the same prices as everyone else and obeys the same limits.' : 'No AI in this game.') + '</div><div style="margin-top:8px">Model: <b>' + esc(groqModel()) + '</b> · key ' + (groqKey() ? '<span class="up">saved</span>' : '<span class="dn">missing</span>') + '</div><button class="btn sm" style="margin-top:10px" data-act="settings">AI settings</button></div>';
   h += '<div class="sec">Backup</div><div class="card"><button class="btn sm" data-act="backup">Download backup (JSON)</button></div>';
   h += '<div class="sec">Danger zone</div><div class="card stack">' + (m.status === 'active' ? '<button class="btn danger block" data-act="endNow">End game now</button>' : '') + '<button class="btn danger block" data-act="deleteGame">Delete game</button></div>';
