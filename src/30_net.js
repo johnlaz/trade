@@ -3,11 +3,13 @@
 //  The whole game lives under games/{CODE}: meta, players, portfolios, fills, prices, equity, orders
 // ══════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY_HERE",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyA19u6l0a3ueq8AGK4qHOM0JHR6KZ5XLgY",
+  authDomain: "trade-arena-2238c.firebaseapp.com",
+  databaseURL: "https://trade-arena-2238c-default-rtdb.firebaseio.com",
+  projectId: "trade-arena-2238c",
+  storageBucket: "trade-arena-2238c.firebasestorage.app",
+  messagingSenderId: "1038401283575",
+  appId: "1:1038401283575:web:0df743218228705a3d7af2"
 };
 const CODE_ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const COLORS = ['#ffb020', '#3ddc97', '#4cc9f0', '#ff6b9a', '#b794f6', '#f4845f', '#9be15d', '#f6e05e'];
