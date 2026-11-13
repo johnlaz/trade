@@ -99,6 +99,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.2.1**: the trade card button only shows in offline games (online players log their own orders).
 - **1.2.0**: tap any player on the leaderboard to see their holdings (as of the last close).
 - **1.1.1**: trade card email goes to lazlab.io@gmail.com; Host tab lists every human player's queued orders.
 - **1.1.0**: added a 1-day game (fills at the first close, scored at the next close).

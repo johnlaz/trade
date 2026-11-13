@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };

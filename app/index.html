@@ -250,7 +250,7 @@ function retPct(eq, base) { return (eq / base - 1) * 100; }
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -1165,7 +1165,7 @@ function tabTrade() {
   if (!pend.length) h += '<div class="card mut small">Nothing queued.</div>';
   else {
     h += '<div class="card">' + pend.map(o => { const fdo = fillDayFor(typeof o.ts === 'number' ? o.ts : Date.now()); return '<div class="fillrow"><span class="tag ' + o.s + '">' + o.s.toUpperCase() + '</span><span><b>' + o.q + ' ' + esc(o.t) + '</b> <span class="mut small">· ' + dayLabel(fdo) + ' close</span>' + (o.n ? '<div class="mut small">' + esc(o.n) + '</div>' : '') + '</span><button class="btn sm" data-act="cancelOrder" data-id="' + esc(o.id) + '">Cancel</button></div>'; }).join('') + '</div>';
-    h += '<button class="btn block" style="margin-top:10px" data-act="cardSheet">Share as trade card…</button>';
+    if (S.game.mode !== 'fb') h += '<button class="btn block" style="margin-top:10px" data-act="cardSheet">Share as trade card…</button>';
   }
   h += '<div class="sec">Positions</div>';
   const ts = Object.keys(pf.pos);
