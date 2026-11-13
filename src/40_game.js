@@ -87,9 +87,14 @@ async function startGame() {
   const first = fillDayFor(now);
   let endDay = meta.endDay;
   if (!endDay) {
-    let e = addDays(dayKey(now), meta.dur || 14);
-    while (!isWeekday(e)) e = addDays(e, -1);
-    endDay = e;
+    if (meta.dur === 1) {
+      // 1-day game: orders fill at the first close, and the score is the move to the next close
+      endDay = nextWeekday(first);
+    } else {
+      let e = addDays(dayKey(now), meta.dur || 14);
+      while (!isWeekday(e)) e = addDays(e, -1);
+      endDay = e;
+    }
   }
   if (endDay < first) throw new Error('The end date is before the first trading day. Pick a later end date.');
   const upd = { 'meta/status': 'active', 'meta/startedAt': now, 'meta/firstDay': first, 'meta/endDay': endDay, 'meta/lastSettled': null };

@@ -74,7 +74,7 @@ function viewCreate() {
     '<label class="f">YOUR NAME</label><input class="in" id="c-me" maxlength="20" value="' + esc(lsRaw('ta_me') || '') + '" placeholder="Host name">' +
     '<label class="f">STARTING CASH (EVERYONE GETS THE SAME)</label><input class="in num" id="c-cash" type="number" inputmode="numeric" min="1000" max="10000000" step="1000" value="' + (CF.cash || 100000) + '">' +
     '<div class="seg" style="margin-top:8px" id="c-cash-chips">' + [10000, 25000, 50000, 100000, 1000000].map(v => '<button type="button" data-act="cashChip" data-v="' + v + '">' + money0(v) + '</button>').join('') + '</div>' +
-    '<label class="f">TIME FRAME</label><div class="seg" id="c-dur">' + [[7, '1 week'], [14, '2 weeks'], [30, '1 month'], [90, '3 months'], [0, 'Custom']].map(d => '<button type="button" data-act="durChip" data-v="' + d[0] + '" class="' + (CF.dur === d[0] ? 'on' : '') + '">' + d[1] + '</button>').join('') + '</div>' +
+    '<label class="f">TIME FRAME</label><div class="seg" id="c-dur">' + [[1, '1 day'], [7, '1 week'], [14, '2 weeks'], [30, '1 month'], [90, '3 months'], [0, 'Custom']].map(d => '<button type="button" data-act="durChip" data-v="' + d[0] + '" class="' + (CF.dur === d[0] ? 'on' : '') + '">' + d[1] + '</button>').join('') + '</div>' +
     '<input class="in ' + (CF.dur === 0 ? '' : 'hide') + '" id="c-end" type="date" style="margin-top:8px" value="' + esc(CF.end || '') + '">' +
     '</div>' +
     '<div class="sec">Fair-play rules</div><div class="card">' +

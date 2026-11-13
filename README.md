@@ -31,6 +31,8 @@ A paper-trading game for you, your friends and an AI player. Everyone starts wit
 4. After 4:20 pm ET the host presses **Settle**. Prices are loaded, the AI takes its turn (using only data through the previous close), every order is validated by the same rules engine, and the leaderboard updates.
 5. At the end date the game finishes, with a winner, a chart against a SPY buy-and-hold benchmark, and an optional AI debrief.
 
+**1-day games:** choose "1 day" as the time frame for a quick round. Orders fill at the first close and the game is scored at the next close (two settles), so the result is who picked the best overnight movers.
+
 Rules enforced for everyone, human or AI: long-only, whole shares, no leverage, daily trade cap, position cap, single-stock cap. Sells run before buys when a day is settled. Pending orders are private until the close; the Feed shows everyone's trades and notes afterward.
 
 ## Set up online play (Firebase, free Spark plan)
@@ -97,6 +99,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.1.0**: added a 1-day game (fills at the first close, scored at the next close).
 - **1.0.0**: first release. Green theme and app icon, online and offline (trade card) play, AI player with Groq model picker, daily-close settling, SPY benchmark, AI debrief.
 
 &copy; 2026 LAZLAB Creations. All Rights Reserved.
