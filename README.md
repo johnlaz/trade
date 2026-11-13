@@ -1,6 +1,15 @@
-# Trade Arena
+<p align="center"><img src="docs/banner.svg" alt="Trade Arena: same cash, same rules, best trader wins" width="100%"></p>
 
-**Same cash. Same rules. Best trader wins.**
+<p align="center">
+<a href="https://johnlaz.github.io/trade/app/"><b>Play</b></a> · <a href="https://johnlaz.github.io/trade/">Landing page</a> · <a href="#set-up-online-play-firebase-free-spark-plan">Set up Firebase</a> · <a href="#ai-player">AI player</a>
+</p>
+
+<p align="center">
+<img alt="PWA" src="https://img.shields.io/badge/PWA-installable-22c06a?style=flat-square">
+<img alt="Single file" src="https://img.shields.io/badge/app-single%20HTML%20file-22c06a?style=flat-square">
+<img alt="Cost" src="https://img.shields.io/badge/cost-free-22c06a?style=flat-square">
+<img alt="Money" src="https://img.shields.io/badge/money-paper%20only-555?style=flat-square">
+</p>
 
 A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and orders fill at the closing price. Single-file PWA (`app/index.html`).
 
@@ -13,6 +22,8 @@ A paper-trading game for you, your friends and an AI player. Everyone starts wit
 ![Leaderboard](app/shot-wide.png)
 
 ## How a game works
+
+<img src="docs/flow.svg" alt="Create, join, trade, settle, win" width="100%">
 
 1. **Host** creates a game: starting cash, time frame, max trades per day, max positions, max % in one stock, and whether any US stock/ETF or only a list can be bought. Optionally adds an AI player.
 2. **Players** join with a 6-character code, link or QR. Offline players get a game file and send back trade cards.
@@ -57,6 +68,8 @@ Daily bars come from Yahoo Finance's public chart endpoint through free CORS pro
 
 ## Data and privacy
 
+<img src="docs/architecture.svg" alt="Architecture: browsers, Firebase, Yahoo, Groq, GitHub Pages" width="100%">
+
 - No accounts. Online players are signed in anonymously by Firebase, and a name is all that is shown.
 - Game data (players, portfolios, fills, prices, daily equity) lives in your Firebase Realtime Database under `games/{CODE}`. Pending orders are readable only by their owner and the host.
 - The Groq key, model choice, watchlist and any proxy URL stay in the host's browser and are never written to Firebase or to exports.
@@ -72,6 +85,7 @@ Push the repo root to GitHub Pages (Settings → Pages → `main` / root). To ch
 /index.html          landing page
 /README.md
 /docs/firebase-rules.json
+/docs/banner.svg, flow.svg, architecture.svg   README visuals
 /app/index.html      the app (single file)
 /app/manifest.json   PWA manifest
 /app/sw.js           service worker

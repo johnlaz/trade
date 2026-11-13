@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" role="img" aria-labelledby="t d">
+  <title id="t">Trade Arena architecture</title>
+  <desc id="d">Player browsers and the host browser sync through Firebase Realtime Database. The host's browser loads daily prices from Yahoo Finance through CORS proxies and calls Groq for the AI player. GitHub Pages serves the static files.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#5B6F88" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect width="960" height="470" rx="16" fill="#0B0F14"/>
+  <rect x="1" y="1" width="958" height="468" rx="15" fill="none" stroke="#223043" stroke-width="2"/>
+  <g font-family="Arial,Helvetica,sans-serif">
+    <!-- GitHub Pages -->
+    <rect x="330" y="26" width="300" height="54" rx="12" fill="#131B26" stroke="#223043"/>
+    <text x="480" y="50" font-size="16" font-weight="800" fill="#E9EFF7" text-anchor="middle">GitHub Pages</text>
+    <text x="480" y="68" font-size="12.5" fill="#A9B7CB" text-anchor="middle">static files: landing, app, service worker</text>
+    <!-- Host -->
+    <rect x="30" y="170" width="250" height="120" rx="14" fill="#131B26" stroke="#22C06A" stroke-width="2"/>
+    <text x="155" y="198" font-size="17" font-weight="800" fill="#E9EFF7" text-anchor="middle">Host's browser</text>
+    <text x="155" y="222" font-size="13" fill="#A9B7CB" text-anchor="middle">rules engine, settles each close</text>
+    <text x="155" y="241" font-size="13" fill="#A9B7CB" text-anchor="middle">runs the AI player's turn</text>
+    <text x="155" y="266" font-size="12.5" fill="#34E282" text-anchor="middle">Groq key lives only here</text>
+    <!-- Players -->
+    <rect x="680" y="170" width="250" height="120" rx="14" fill="#131B26" stroke="#223043"/>
+    <text x="805" y="198" font-size="17" font-weight="800" fill="#E9EFF7" text-anchor="middle">Players' browsers</text>
+    <text x="805" y="222" font-size="13" fill="#A9B7CB" text-anchor="middle">queue orders, watch the board</text>
+    <text x="805" y="241" font-size="13" fill="#A9B7CB" text-anchor="middle">no account, name only</text>
+    <text x="805" y="266" font-size="12.5" fill="#8C9BB0" text-anchor="middle">or offline: trade card file</text>
+    <!-- Firebase -->
+    <rect x="340" y="170" width="280" height="120" rx="14" fill="#131B26" stroke="#223043"/>
+    <text x="480" y="198" font-size="17" font-weight="800" fill="#E9EFF7" text-anchor="middle">Firebase Realtime Database</text>
+    <text x="480" y="222" font-size="13" fill="#A9B7CB" text-anchor="middle">games/CODE: players, orders,</text>
+    <text x="480" y="241" font-size="13" fill="#A9B7CB" text-anchor="middle">portfolios, fills, prices, equity</text>
+    <text x="480" y="266" font-size="12.5" fill="#34E282" text-anchor="middle">anonymous sign-in + security rules</text>
+    <!-- Yahoo -->
+    <rect x="30" y="370" width="250" height="64" rx="12" fill="#131B26" stroke="#223043"/>
+    <text x="155" y="396" font-size="15" font-weight="800" fill="#E9EFF7" text-anchor="middle">Yahoo Finance</text>
+    <text x="155" y="416" font-size="12.5" fill="#A9B7CB" text-anchor="middle">daily closes via CORS proxies</text>
+    <!-- Groq -->
+    <rect x="340" y="370" width="280" height="64" rx="12" fill="#131B26" stroke="#223043"/>
+    <text x="480" y="396" font-size="15" font-weight="800" fill="#E9EFF7" text-anchor="middle">Groq</text>
+    <text x="480" y="416" font-size="12.5" fill="#A9B7CB" text-anchor="middle">AI player's trades and the debrief</text>
+  </g>
+  <g stroke="#5B6F88" stroke-width="2" fill="none">
+    <line x1="284" y1="230" x2="336" y2="230" marker-start="url(#a)" marker-end="url(#a)"/>
+    <line x1="624" y1="230" x2="676" y2="230" marker-start="url(#a)" marker-end="url(#a)"/>
+    <path d="M155 168 L155 120 Q155 96 179 96 L330 80" marker-end="url(#a)" stroke-dasharray="5 5"/>
+    <path d="M805 168 L805 120 Q805 96 781 96 L630 80" marker-end="url(#a)" stroke-dasharray="5 5"/>
+    <path d="M155 292 L155 366" marker-end="url(#a)"/>
+    <path d="M225 292 L225 330 Q225 346 241 346 L400 346 Q480 346 480 366" marker-end="url(#a)"/>
+  </g>
+  <text x="480" y="456" font-family="Arial,Helvetica,sans-serif" font-size="12" fill="#8C9BB0" text-anchor="middle">Solid arrows: data at run time. Dashed: files loaded once.</text>
+</svg>

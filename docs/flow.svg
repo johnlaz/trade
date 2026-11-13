@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 230" role="img" aria-labelledby="t d">
+  <title id="t">How a Trade Arena game runs</title>
+  <desc id="d">Five steps: the host creates a game, players join with a code, everyone queues orders, the host settles each close, and the leaderboard decides the winner.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#5B6F88" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect width="1000" height="230" rx="16" fill="#0B0F14"/>
+  <rect x="1" y="1" width="998" height="228" rx="15" fill="none" stroke="#223043" stroke-width="2"/>
+  <g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+    <g>
+      <rect x="28" y="40" width="156" height="150" rx="14" fill="#131B26" stroke="#223043"/>
+      <circle cx="106" cy="40" r="16" fill="#22C06A"/><text x="106" y="46" font-size="16" font-weight="800" fill="#031A0D">1</text>
+      <text x="106" y="92" font-size="19" font-weight="800" fill="#E9EFF7">Create</text>
+      <text x="106" y="118" font-size="13.5" fill="#A9B7CB">Pick cash, time frame,</text><text x="106" y="136" font-size="13.5" fill="#A9B7CB">trade cap and limits.</text><text x="106" y="158" font-size="13.5" fill="#34E282">Add an AI player.</text>
+    </g>
+    <g>
+      <rect x="222" y="40" width="156" height="150" rx="14" fill="#131B26" stroke="#223043"/>
+      <circle cx="300" cy="40" r="16" fill="#22C06A"/><text x="300" y="46" font-size="16" font-weight="800" fill="#031A0D">2</text>
+      <text x="300" y="92" font-size="19" font-weight="800" fill="#E9EFF7">Join</text>
+      <text x="300" y="118" font-size="13.5" fill="#A9B7CB">Friends use a 6-letter</text><text x="300" y="136" font-size="13.5" fill="#A9B7CB">code, link or QR.</text><text x="300" y="158" font-size="13.5" fill="#34E282">Host presses Start.</text>
+    </g>
+    <g>
+      <rect x="416" y="40" width="156" height="150" rx="14" fill="#131B26" stroke="#223043"/>
+      <circle cx="494" cy="40" r="16" fill="#22C06A"/><text x="494" y="46" font-size="16" font-weight="800" fill="#031A0D">3</text>
+      <text x="494" y="92" font-size="19" font-weight="800" fill="#E9EFF7">Trade</text>
+      <text x="494" y="118" font-size="13.5" fill="#A9B7CB">Queue buys and sells</text><text x="494" y="136" font-size="13.5" fill="#A9B7CB">with a one-line why.</text><text x="494" y="158" font-size="13.5" fill="#34E282">Orders stay private.</text>
+    </g>
+    <g>
+      <rect x="610" y="40" width="156" height="150" rx="14" fill="#131B26" stroke="#223043"/>
+      <circle cx="688" cy="40" r="16" fill="#22C06A"/><text x="688" y="46" font-size="16" font-weight="800" fill="#031A0D">4</text>
+      <text x="688" y="92" font-size="19" font-weight="800" fill="#E9EFF7">Settle</text>
+      <text x="688" y="118" font-size="13.5" fill="#A9B7CB">After the 4 pm close the</text><text x="688" y="136" font-size="13.5" fill="#A9B7CB">host fills every order.</text><text x="688" y="158" font-size="13.5" fill="#34E282">The AI takes its turn.</text>
+    </g>
+    <g>
+      <rect x="804" y="40" width="168" height="150" rx="14" fill="#131B26" stroke="#22C06A" stroke-width="2"/>
+      <circle cx="888" cy="40" r="16" fill="#22C06A"/><text x="888" y="46" font-size="16" font-weight="800" fill="#031A0D">5</text>
+      <text x="888" y="92" font-size="19" font-weight="800" fill="#E9EFF7">Win</text>
+      <text x="888" y="118" font-size="13.5" fill="#A9B7CB">Leaderboard vs SPY,</text><text x="888" y="136" font-size="13.5" fill="#A9B7CB">shared notes, AI</text><text x="888" y="158" font-size="13.5" fill="#34E282">debrief at the end.</text>
+    </g>
+  </g>
+  <g stroke="#5B6F88" stroke-width="2" fill="none" marker-end="url(#a)">
+    <line x1="186" y1="115" x2="218" y2="115"/><line x1="380" y1="115" x2="412" y2="115"/><line x1="574" y1="115" x2="606" y2="115"/><line x1="768" y1="115" x2="800" y2="115"/>
+  </g>
+  <path d="M688 196 C688 222 494 222 494 196" fill="none" stroke="#5B6F88" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#a)"/>
+  <text x="591" y="224" font-family="Arial,Helvetica,sans-serif" font-size="12.5" fill="#8C9BB0" text-anchor="middle">repeat every trading day</text>
+</svg>
