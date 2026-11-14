@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.1';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -17,12 +17,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Large-cap preset for "ticker list" games and the AI watchlist (a convenience list, not an official index).
 const LARGE_CAPS = 'AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V UNH XOM LLY MA JNJ PG HD COST MRK ABBV CVX PEP KO WMT BAC CRM NFLX AMD ORCL ADBE TMO MCD CSCO ACN ABT LIN DHR WFC TXN PM DIS VZ NEE INTC INTU AMGN UPS PFE IBM QCOM LOW HON UNP CAT RTX SPGI GE BA AMAT BMY GS MS PLD NOW DE SBUX MDT BLK ISRG LMT AXP GILD MDLZ TJX ADI BKNG ADP CVS CB SYK VRTX REGN C ZTS SO MO USB COP T MMM F GM SPY QQQ DIA IWM'.split(' ');
-const AI_WATCH_DEFAULT = 'AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO JPM V UNH XOM LLY COST WMT HD NFLX AMD ORCL BAC KO PEP DIS CAT GE SPY QQQ IWM DIA'.split(' ');
+const AI_WATCH_DEFAULT = 'AAPL MSFT NVDA AMZN GOOGL META TSLA JPM XOM LLY COST NFLX SPY QQQ IWM'.split(' ');
 
 // ── Price fetching: hedged CORS-proxy race (same approach as AXIOM) ──
 const PROXIES = [
   { id: 'allorigins', url: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
-  { id: 'corsproxy', url: u => 'https://corsproxy.io/?' + encodeURIComponent(u) },
   { id: 'codetabs', url: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) }
 ];
 let proxyStats = lsGet('ta_proxy_stats', {});
