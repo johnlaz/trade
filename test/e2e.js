@@ -40,6 +40,8 @@ function yahoo(t) {
 
   // create local game
   await page.click('[data-act=newGame]');
+  await page.click('[data-act=preset][data-v=sprint]');
+  ok(await page.inputValue('#c-tr') === '5' && await page.inputValue('#c-pos') === '10', 'Sprint preset fills the rules');
   await page.fill('#c-name', 'Test Game'); await page.fill('#c-me', 'John');
   await page.fill('#c-tr', '2'); await page.fill('#c-pos', '4'); await page.fill('#c-pct', '50');
   ok(await page.locator('#c-online').isChecked(), 'online play defaults on now that Firebase is configured');
@@ -60,17 +62,23 @@ function yahoo(t) {
   await page.click('[data-act=newTrade]');
   await page.fill('#t-tk', 'aapl'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b');
   await page.click('[data-act=maxQty]');
+  ok(await page.locator('.sheet [data-act=chip]').count() >= 6, 'quick-pick ticker chips shown');
+  await page.click('.sheet [data-act=side][data-v=sell]');
+  ok(await page.locator('#t-hint:has-text("don’t own")').count() === 1, 'sell hint says you own none');
+  await page.click('.sheet [data-act=side][data-v=buy]');
   const maxv = await page.inputValue('#t-q');
   ok(maxv === '250', 'max buy = 50% cap of 100k at $200 = 250 (got ' + maxv + ')');
   await page.fill('#t-q', '400'); await page.click('[data-act=placeOrder]');
   ok(await page.locator('.note.bad:has-text("50%")').count() === 1, 'single-stock cap blocked client-side');
   await page.fill('#t-q', '100'); await page.fill('#t-n', 'big tech');
   await page.click('[data-act=placeOrder]'); await page.waitForTimeout(300);
+  ok(await page.locator('.sheet:has-text("Order placed")').count() === 1, 'confirmation sheet shown after placing');
+  await page.click('.sheet [data-act=closeSheet]'); await page.waitForTimeout(200);
   ok(await page.locator('text=100 AAPL').count() >= 1, 'order queued');
   await page.waitForTimeout(500);
   ok(await page.locator('text=since placed').count() >= 1, 'queued order shows live gain/loss since placed');
   // second order, then third should hit the 2/day cap
-  await page.click('[data-act=newTrade]'); await page.fill('#t-tk', 'QQQ'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b'); await page.fill('#t-q', '10'); await page.click('[data-act=placeOrder]'); await page.waitForTimeout(200);
+  await page.click('[data-act=newTrade]'); await page.fill('#t-tk', 'QQQ'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b'); await page.fill('#t-q', '10'); await page.click('[data-act=placeOrder]'); await page.waitForTimeout(200); await page.click('.sheet [data-act=closeSheet]'); await page.waitForTimeout(200);
   await page.click('[data-act=newTrade]'); await page.fill('#t-tk', 'NVDA'); await page.click('[data-act=lookup]'); await page.waitForSelector('#t-info b'); await page.fill('#t-q', '5'); await page.click('[data-act=placeOrder]');
   ok(await page.locator('.note.bad:has-text("used all 2 trades")').count() === 1, 'daily trade cap enforced');
   await page.click('.sheet [data-act=closeSheet]');
@@ -93,6 +101,8 @@ function yahoo(t) {
   ok(/AI Trader/.test(board) && /John/.test(board) && /Sam/.test(board), 'leaderboard lists all three players');
   ok(/SPY buy/.test(board), 'benchmark row shown');
   // inspect state
+  const rc = await page.evaluate(() => recapText(Object.keys(S.G.fills)[0]));
+  ok(/Trade Arena/.test(rc) && /1\. /.test(rc) && /Trades:/.test(rc), 'recap text builds with standings and trades');
   await page.click('[data-act=viewPlayer]'); await page.waitForTimeout(300);
   ok(await page.locator('.sheet:has-text("Holdings as of the last settled close")').count() === 1, 'tap a player shows holdings sheet');
   await page.click('.sheet [data-act=closeSheet]'); await page.waitForTimeout(200);

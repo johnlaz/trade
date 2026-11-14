@@ -99,6 +99,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.4.0**: rule presets (Casual, Stock-picker, Diversify, Beginner, Sprint); order confirmation and after-4pm warning; quick-pick ticker chips; sell hint; allocation bar; "days ready to settle" badge; share daily recap; model choice in Settings now saves; fixed a stale-ticker lookup that could queue the wrong stock.
 - **1.3.2**: prices now go through a Cloudflare Worker first (fast and reliable), with the free proxies as fallback.
 - **1.3.1**: dropped the dead corsproxy.io route, smaller default AI watchlist, added docs/worker.js for a personal price proxy.
 - **1.3.0**: live estimates on the Trade tab: queued orders show the current price and gain/loss since placed, positions use live prices (refreshed every minute while open).

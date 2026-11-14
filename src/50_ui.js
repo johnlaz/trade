@@ -67,10 +67,18 @@ function viewHome() {
 
 // ── create ──
 const CF = { dur: 14, ai: true, uni: 'any' };
+const PRESETS = [
+  { id: 'casual', n: 'Casual', d: '2 weeks · 3 trades/day · 25% cap', dur: 14, cash: 100000, tr: 3, pos: 10, pct: 25 },
+  { id: 'picker', n: 'Stock-picker', d: '1 month · 2 trades/day · 8 positions', dur: 30, cash: 100000, tr: 2, pos: 8, pct: 30 },
+  { id: 'diversify', n: 'Diversify', d: '1 month · 15 positions · 15% cap', dur: 30, cash: 100000, tr: 3, pos: 15, pct: 15 },
+  { id: 'beginner', n: 'Beginner', d: '2 weeks · $50k · simple limits', dur: 14, cash: 50000, tr: 2, pos: 6, pct: 40 },
+  { id: 'sprint', n: 'Sprint', d: '1 week · 5 trades/day', dur: 7, cash: 100000, tr: 5, pos: 10, pct: 25 }
+];
 function viewCreate() {
   const hasFb = !!fbConfig(); const hasKey = !!groqKey();
   return '<div class="wrap"><div class="top"><button class="icon-btn" data-act="home" aria-label="Back">‹</button><div class="brand">NEW <span>GAME</span></div><span style="width:40px"></span></div>' +
-    '<div class="card"><label class="f" style="margin-top:0">GAME NAME</label><input class="in" id="c-name" maxlength="30" value="' + esc(CF.name || 'Friday Showdown') + '">' +
+    '<div class="sec" style="margin-top:4px">Quick start</div><div class="card"><div class="seg" id="c-presets" style="flex-wrap:wrap">' + PRESETS.map(p => '<button type="button" data-act="preset" data-v="' + p.id + '">' + p.n + '</button>').join('') + '</div><div class="small mut" id="c-preset-d" style="margin-top:8px">One tap fills the rules below. You can still change anything.</div></div>' +
+    '<div class="card" style="margin-top:12px"><label class="f" style="margin-top:0">GAME NAME</label><input class="in" id="c-name" maxlength="30" value="' + esc(CF.name || 'Friday Showdown') + '">' +
     '<label class="f">YOUR NAME</label><input class="in" id="c-me" maxlength="20" value="' + esc(lsRaw('ta_me') || '') + '" placeholder="Host name">' +
     '<label class="f">STARTING CASH (EVERYONE GETS THE SAME)</label><input class="in num" id="c-cash" type="number" inputmode="numeric" min="1000" max="10000000" step="1000" value="' + (CF.cash || 100000) + '">' +
     '<div class="seg" style="margin-top:8px" id="c-cash-chips">' + [10000, 25000, 50000, 100000, 1000000].map(v => '<button type="button" data-act="cashChip" data-v="' + v + '">' + money0(v) + '</button>').join('') + '</div>' +

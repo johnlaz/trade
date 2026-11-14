@@ -57,6 +57,8 @@ function tabBoard() {
     h += '<div class="card row sp"><div><div class="mut small">NEXT CLOSE</div><b>' + (next ? dayLabel(next) : '—') + '</b></div><div style="text-align:right"><div class="mut small">ENDS</div><b>' + dayLabel(m.endDay) + '</b><div class="mut small">' + tradingDaysLeft() + ' trading days left</div></div></div>';
     if (isHost() && next) {
       const ready = canSettle(next, Date.now());
+      let nReady = 0; for (let d = next; d && nReady < 30 && canSettle(d, Date.now()) && d <= m.endDay; d = nextWeekday(d)) nReady++;
+      if (nReady > 1) h += '<div class="note" style="margin-top:10px">' + nReady + ' trading days are ready to settle. Tap Settle ' + nReady + ' times to catch up.</div>';
       h += '<button class="btn ' + (ready ? 'primary' : '') + ' block" style="margin-top:10px" data-act="settle"' + (ready ? '' : ' disabled') + '>' + (ready ? 'Settle ' + dayLabel(next) + ' close' : 'Settle after 4:20 pm ET on ' + dayLabel(next)) + '</button>';
     }
   }
@@ -118,9 +120,13 @@ function tabTrade() {
   const usedToday = pend.filter(o => fillDayFor(typeof o.ts === 'number' ? o.ts : Date.now()) === fd).length;
   let h = '<div class="card"><div class="mut small">YOUR PORTFOLIO</div><div class="row sp" style="align-items:flex-end"><div class="num" style="font-size:30px;font-weight:900">' + money0(val) + '</div><div class="num ' + (pct >= 0 ? 'up' : 'dn') + '" style="font-weight:800">' + pctTxt(pct) + '</div></div>' +
     '<div class="kpis" style="margin-top:12px"><div class="kpi"><small>Cash</small><b class="num">' + money0(pf.cash) + '</b></div><div class="kpi"><small>Positions</small><b>' + Object.keys(pf.pos).length + ' / ' + r.maxPos + '</b></div><div class="kpi"><small>Trades queued</small><b>' + usedToday + ' / ' + r.maxTr + '</b></div></div></div>';
+  { const segs = Object.keys(pf.pos).map(t => ({ t, v: pf.pos[t].q * (px[t] != null ? px[t] : pf.pos[t].c / pf.pos[t].q) })).sort((a, b) => b.v - a.v);
+    const tot = val > 0 ? val : 1; const cols = ['#22c06a', '#3b82f6', '#f59e0b', '#a78bfa', '#ec4899', '#14b8a6', '#f97316', '#84cc16'];
+    h += '<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:#1d2733;margin-top:10px">' + segs.map((s, i) => '<span title="' + esc(s.t) + '" style="width:' + (s.v / tot * 100).toFixed(2) + '%;background:' + cols[i % cols.length] + '"></span>').join('') + '</div>' +
+      '<div class="small mut" style="margin-top:6px">' + (segs.length ? segs.slice(0, 4).map(s => esc(s.t) + ' ' + Math.round(s.v / tot * 100) + '%').join(' · ') + ' · cash ' + Math.round(pf.cash / tot * 100) + '%' + (r.maxPct > 0 ? ' · limit ' + r.maxPct + '% per stock' : '') : 'All cash so far.') + '</div>'; }
   if (m.status === 'active') h += '<button class="btn primary block" style="margin-top:12px" data-act="newTrade">New trade</button><div class="mut small" style="text-align:center;margin-top:8px">Orders now fill at the ' + dayLabel(fd) + ' close.</div>';
   h += '<div class="sec">Queued orders</div>';
-  if (!pend.length) h += '<div class="card mut small">Nothing queued.</div>';
+  if (!pend.length) h += '<div class="card mut small">No orders placed yet. Tap New trade. Orders placed now fill at the ' + dayLabel(fd) + ' close.</div>';
   else {
     let qpl = 0, qn = 0;
     const live = o => { const L = liveOf(o.t); if (L == null) return ''; let t = ' <span class="mut small">· now ' + money(L) + '</span>'; if (o.p > 0) { const d = (o.s === 'buy' ? L - o.p : o.p - L) * o.q; qpl += d; qn++; t += ' <span class="small ' + (d >= 0 ? 'up' : 'dn') + '">' + (d >= 0 ? '+' : '') + money0(d) + ' since placed</span>'; } return t; };
@@ -156,7 +162,7 @@ function tabFeed() {
       }).join('');
       return '<div style="margin-top:12px"><div class="nm row" style="gap:8px"><span class="dot" style="background:' + col + '"></span><b>' + esc(p.n) + '</b>' + (p.ai ? '<span class="chip ai">AI</span>' : '') + (eq[pid] != null ? '<span class="mut small num" style="margin-left:auto">' + money0(eq[pid]) + '</span>' : '') + '</div>' + (sum ? '<div class="mut small" style="margin:4px 0">' + esc(sum.n) + '</div>' : '') + (rows || '<div class="mut small">No trades.</div>') + '</div>';
     }).join('');
-    return '<div class="sec">' + dayLabel(d) + '</div><div class="card" style="margin-top:0">' + (blocks || '<span class="mut small">No orders.</span>') + '</div>';
+    return '<div class="sec row sp"><span>' + dayLabel(d) + '</span><button class="btn sm" data-act="recap" data-day="' + esc(d) + '">Share recap</button></div><div class="card" style="margin-top:0">' + (blocks || '<span class="mut small">No orders.</span>') + '</div>';
   }).join('');
 }
 
@@ -185,19 +191,23 @@ function tabHost() {
 // ── Trade sheet ──
 function openTrade(prefill) {
   const m = META(), r = RULES(), me = ME(); const fd = fillDayFor(Date.now());
-  let cur = { side: 'buy', d: null };
-  openSheet('<h2>New trade</h2><div class="mut small">Fills at the <b>' + dayLabel(fd) + '</b> close.</div>' +
+  TR = { d: null, side: 'buy' };
+  const late = fd !== dayKey(Date.now()) && isWeekday(dayKey(Date.now())) ? '<div class="note" style="margin-top:8px">It’s after 4:00 pm ET, so this fills at the <b>' + dayLabel(fd) + '</b> close, not today’s.</div>' : '';
+  const lastDay = m.endDay && fd >= m.endDay ? '<div class="note bad" style="margin-top:8px">' + dayLabel(fd) + ' is the game’s last scoring day. An order filled at that close can’t change your return.</div>' : '';
+  const chipList = Array.from(new Set(Object.keys(myPortfolio().pos).concat(['SPY', 'QQQ', 'NVDA', 'AAPL', 'TSLA', 'AMZN']))).slice(0, 8);
+  openSheet('<h2>New trade</h2><div class="mut small">Fills at the <b>' + dayLabel(fd) + '</b> close.</div>' + late + lastDay +
+    '<div class="seg" style="margin-top:10px;flex-wrap:wrap">' + chipList.map(t => '<button type="button" data-act="chip" data-v="' + esc(t) + '">' + esc(t) + '</button>').join('') + '</div>' +
     '<label class="f">TICKER</label><div class="row"><input class="in code" id="t-tk" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="AAPL" style="flex:1;text-transform:uppercase;letter-spacing:.1em" value="' + esc(prefill || '') + '"><button class="btn" data-act="lookup">Look up</button></div>' +
     '<div id="t-info" class="small mut" style="margin-top:8px;min-height:20px"></div>' +
     '<label class="f">SIDE</label><div class="seg buy" id="t-side"><button type="button" data-act="side" data-v="buy" class="on">Buy</button><button type="button" data-act="side" data-v="sell">Sell</button></div>' +
-    '<label class="f">SHARES</label><div class="row"><input class="in num" id="t-q" type="number" inputmode="numeric" min="1" step="1" placeholder="0" style="flex:1"><button class="btn sm" data-act="maxQty">Max</button></div>' +
+    '<div id="t-hint" class="small mut" style="margin-top:8px;min-height:18px"></div><label class="f">SHARES</label><div class="row"><input class="in num" id="t-q" type="number" inputmode="numeric" min="1" step="1" placeholder="0" style="flex:1"><button class="btn sm" data-act="maxQty">Max</button></div>' +
     '<div id="t-est" class="small mut" style="margin-top:8px;min-height:20px"></div>' +
     '<label class="f">WHY? (OPTIONAL — EVERYONE SEES IT AFTER THE CLOSE)</label><input class="in" id="t-n" maxlength="100" placeholder="e.g. strong earnings, buying the dip…">' +
     '<div id="t-msg" style="margin-top:12px"></div>' +
     '<button class="btn primary block" style="margin-top:12px" data-act="placeOrder">Place order</button>', sh => {
     const tk = $('#t-tk', sh), q = $('#t-q', sh);
     const upd = () => tradeEstimate();
-    tk.addEventListener('input', () => { cur.d = null; $('#t-info').textContent = ''; $('#t-est').textContent = ''; });
+    tk.addEventListener('input', () => { TR.d = null; $('#t-info').textContent = ''; $('#t-est').textContent = ''; });
     tk.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doLookup(); } });
     q.addEventListener('input', upd);
     if (prefill) doLookup();
@@ -215,7 +225,15 @@ async function doLookup() {
     tradeEstimate();
   } catch (e) { TR.d = null; el.className = 'small dn'; el.textContent = e.message; }
 }
+function tradeHint() {
+  const h = $('#t-hint'); if (!h) return;
+  if (TR.side !== 'sell') { h.textContent = ''; return; }
+  const t = TR.d ? TR.d.t : normTicker(($('#t-tk') || {}).value || ''); if (!t) { h.textContent = 'Pick a ticker to sell.'; return; }
+  const own = myHeld(t), qd = queuedFor(t, 'sell');
+  h.innerHTML = own ? 'You own <b>' + own + '</b> shares of ' + esc(t) + (qd ? ' (' + qd + ' already queued to sell)' : '') + '.' : '<span class="dn">You don’t own any ' + esc(t) + ', so there’s nothing to sell.</span>';
+}
 function tradeEstimate() {
+  tradeHint();
   const est = $('#t-est'); if (!est) return;
   const q = Math.floor(Number($('#t-q').value) || 0);
   if (!TR.d || !q) { est.textContent = ''; return; }
@@ -248,7 +266,7 @@ function checkClient(o) {
 }
 async function placeOrder() {
   const msg = $('#t-msg'); msg.innerHTML = '';
-  if (!TR.d) { await doLookup(); if (!TR.d) return; }
+  if (!TR.d || TR.d.t !== normTicker($('#t-tk').value)) { TR.d = null; await doLookup(); if (!TR.d) return; }
   const q = Math.floor(Number($('#t-q').value) || 0);
   if (q < 1) { msg.innerHTML = '<div class="note bad">Enter a whole number of shares.</div>'; return; }
   const o = { s: TR.side, t: TR.d.t, q, n: ($('#t-n').value || '').trim().slice(0, 100) };
@@ -256,7 +274,11 @@ async function placeOrder() {
   if (err) { msg.innerHTML = '<div class="note bad">' + esc(err) + '</div>'; return; }
   const ord = { s: o.s, t: o.t, q: o.q, n: o.n, ts: NOW() }; if (TR.d && TR.d.last > 0) ord.p = Math.round(TR.d.last * 100) / 100;
   await W.set('orders/' + ME() + '/' + newId(), ord);
-  closeSheet(); toast((o.s === 'buy' ? 'Buy ' : 'Sell ') + o.q + ' ' + o.t + ' queued'); S.tab = 'trade'; sched();
+  S.tab = 'trade'; sched();
+  const fdo = fillDayFor(Date.now());
+  openSheet('<div style="text-align:center;padding:8px 0"><div style="font-size:44px;line-height:1">✓</div><h2 style="margin:8px 0 4px">Order placed</h2><div class="num" style="font-size:20px;font-weight:800"><span class="tag ' + o.s + '">' + o.s.toUpperCase() + '</span> ' + o.q + ' ' + esc(o.t) + '</div>' +
+    '<div class="mut small" style="margin-top:8px">Fills at the <b>' + dayLabel(fdo) + '</b> close' + (ord.p ? ' · price now about ' + money(ord.p) : '') + '. You can cancel it from the Trade tab until then.</div>' +
+    '<button class="btn primary block" style="margin-top:16px" data-act="closeSheet">Done</button></div>');
 }
 
 // ── trade card sheet (player → host, for offline play) ──
@@ -306,3 +328,17 @@ async function liveRefresh() {
   } finally { liveBusy = false; }
 }
 setInterval(liveRefresh, 60000);
+
+// Plain-text recap of one settled day for pasting into a group chat.
+function recapText(d) {
+  const r = RULES(), eq = (S.G.equity || {})[d] || {}, byP = (S.G.fills || {})[d] || {};
+  const rows = playerIds().filter(p => eq[p] != null).map(p => ({ p, n: S.G.players[p].n + (S.G.players[p].ai ? ' (AI)' : ''), v: eq[p], pct: retPct(eq[p], r.cash) })).sort((a, b) => b.v - a.v);
+  const lines = ['Trade Arena: ' + (META().name || '') + ', ' + dayLabel(d) + ' close', ''];
+  rows.forEach((x, i) => lines.push((i + 1) + '. ' + x.n + ' ' + money0(x.v) + ' (' + pctTxt(x.pct) + ')'));
+  if (eq.spy != null) lines.push('SPY: ' + pctTxt(retPct(eq.spy, r.cash)));
+  const tr = [];
+  Object.keys(byP).forEach(pid => Object.keys(byP[pid]).forEach(id => { const x = byP[pid][id]; if (id === '_sum' || x.st !== 'filled') return; tr.push((S.G.players[pid] || {}).n + ': ' + x.s + ' ' + x.q + ' ' + x.t + ' @ ' + money(x.px) + (x.n ? ' (' + x.n + ')' : '')); }));
+  if (tr.length) { lines.push('', 'Trades:'); tr.forEach(t => lines.push(t)); }
+  lines.push('', 'Join the next game: ' + location.origin + location.pathname.replace(/app\/?$/, ''));
+  return lines.join('\n');
+}

@@ -18,6 +18,12 @@ const ACT = {
   forgetGame() { removeGameEntry(S.game.code); leaveGame(); },
 
   // create form
+  preset(el) {
+    const p = PRESETS.find(x => x.id === el.dataset.v); if (!p) return;
+    $('#c-cash').value = p.cash; $('#c-tr').value = p.tr; $('#c-pos').value = p.pos; $('#c-pct').value = p.pct;
+    CF.dur = p.dur; const ds = $('#c-dur'); ds.querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === p.dur)); $('#c-end').classList.add('hide');
+    $('#c-presets').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); $('#c-preset-d').textContent = p.n + ': ' + p.d;
+  },
   cashChip(el) { $('#c-cash').value = el.dataset.v; },
   durChip(el) { CF.dur = +el.dataset.v; $('#c-dur').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); $('#c-end').classList.toggle('hide', CF.dur !== 0); },
   uniChip(el) { CF.uni = el.dataset.v; $('#c-uni').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); $('#c-list-wrap').classList.toggle('hide', CF.uni !== 'list'); },
@@ -111,7 +117,9 @@ const ACT = {
   // trading
   newTrade() { TR = { d: null, side: 'buy' }; openTrade(); },
   lookup() { doLookup(); },
-  side(el) { TR.side = el.dataset.v; $('#t-side').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); },
+  side(el) { TR.side = el.dataset.v; $('#t-side').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); tradeEstimate(); },
+  recap(el) { const t = recapText(el.dataset.day); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else copyText(t); },
+  chip(el) { $('#t-tk').value = el.dataset.v; TR.d = null; doLookup(); },
   maxQty() { if (!TR.d) return toast('Look up a ticker first', 'bad'); $('#t-q').value = maxQty() || ''; tradeEstimate(); },
   placeOrder() { guard(placeOrder); },
   cancelOrder(el) { guard(async () => { await W.set('orders/' + ME() + '/' + el.dataset.id, null); }, 'Order cancelled'); },
@@ -148,6 +156,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet()
 
 // ── boot ──
 (function boot() {
+  document.addEventListener('change', e => { if (e.target && e.target.id === 's-model') { lsRawSet('ta_groq_model', e.target.value); toast('Model saved'); } });
   render();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
