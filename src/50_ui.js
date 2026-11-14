@@ -52,13 +52,13 @@ function linkLabels(root) {
   });
 }
 function footer() {
-  return '<div class="foot">Trade Arena v' + APP_VERSION + ' · © 2026 LAZLAB Creations · <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">Note to self</a><br>Paper trading only. Not financial advice.</div>';
+  return '<div class="foot">Trade Arena v' + APP_VERSION + ' · © 2026 LAZLAB Creations · <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">Contact us</a><br>Paper trading only. Not financial advice.</div>';
 }
 
 // ── home ──
 function viewHome() {
   const games = gamesList();
-  return '<div class="wrap"><div class="top"><div class="brand">TRADE<span>ARENA</span></div><button class="icon-btn" data-act="settings" aria-label="Settings">⚙</button></div>' +
+  return '<div class="wrap"><div class="top"><div class="brand"><img class="logo" src="icon-192.png" alt="">TRADE<span>ARENA</span></div><button class="icon-btn" data-act="settings" aria-label="Settings">⚙</button></div>' +
     '<div class="hero"><h1>Same cash.<br>Same rules.<br><em>Best trader wins.</em></h1><p>A paper-trading game for you, your friends and an AI player. Everyone starts equal, trades are capped, and the closing bell decides.</p></div>' +
     '<div class="stack" style="margin-top:22px"><button class="btn primary block" data-act="newGame">Host a game</button><button class="btn block" data-act="joinSheet">Join with a code</button></div>' +
     (games.length ? '<div class="sec">Your games</div><div class="stack">' + games.map((g, i) => '<button class="gitem" data-act="openGame" data-i="' + i + '"><span><b>' + esc(g.name || 'Game') + '</b><span class="mut small code">' + esc(g.code) + '</span></span><span class="row"><span class="chip ' + (g.role === 'host' ? 'acc' : '') + '">' + (g.role === 'host' ? 'Host' : 'Player') + '</span>' + (g.mode === 'local' ? '<span class="chip">Offline</span>' : '') + '</span></button>').join('') + '</div>' : '') +

@@ -1,37 +1,67 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Trade Arena: paper-trading game</title>
 <meta name="description" content="Same starting cash, same rules. Play a paper-trading game against friends and an AI player.">
-<meta name="theme-color" content="#0b0f14"><link rel="icon" href="app/icon-192.png">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta property="og:title" content="Trade Arena"><meta property="og:description" content="Same cash. Same rules. Best trader wins."><meta property="og:image" content="https://johnlaz.github.io/trade/app/shot-wide.png"><meta property="og:type" content="website">
 <style>
 :root{--bg:#0b0f14;--card:#131b26;--line:#223043;--tx:#e9eff7;--mut:#8c9bb0;--acc:#22c06a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.w{max-width:760px;margin:0 auto;padding:28px 20px 60px}
-.brand{font-weight:900;letter-spacing:.14em;font-size:14px}.brand span{color:var(--acc)}
-h1{font-size:clamp(36px,8vw,60px);line-height:1.03;letter-spacing:-.025em;margin:44px 0 16px;font-weight:900}h1 em{font-style:normal;color:var(--acc)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.glow{position:fixed;inset:-20% -10% auto;height:70vh;background:radial-gradient(50% 60% at 50% 0,#22c06a2e,transparent 70%);pointer-events:none;animation:breathe 7s ease-in-out infinite}
+.w{position:relative;max-width:820px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 20px 60px}
+nav{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.14em;font-size:14px}
+nav img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 0 1px #ffffff14,0 4px 14px #0008}nav span{color:var(--acc)}
+.hero{display:grid;gap:28px;grid-template-columns:1.1fr .9fr;align-items:center}
+h1{font-size:clamp(38px,8vw,64px);line-height:1.02;letter-spacing:-.03em;margin:40px 0 16px;font-weight:900}h1 em{font-style:normal;background:linear-gradient(90deg,#22c06a,#7bf0b0);-webkit-background-clip:text;background-clip:text;color:transparent}
 p.lead{color:var(--mut);font-size:18px;max-width:46ch;margin:0 0 26px}
-.btn{display:inline-block;background:var(--acc);color:#031a0d;font-weight:800;padding:15px 26px;border-radius:14px;text-decoration:none}
-.btn.o{background:var(--card);color:var(--tx);border:1px solid var(--line);margin-left:8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:46px 0}
-.c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.c b{display:block;margin-bottom:4px}.c span{color:var(--mut);font-size:14.5px}
-.shots{display:flex;gap:14px;overflow:auto;padding-bottom:8px}.shots img{height:440px;border-radius:18px;border:1px solid var(--line)}
-form{display:flex;gap:8px;margin:26px 0 0;flex-wrap:wrap}
-input{flex:1;min-width:150px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--tx);font:700 18px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase}
-button{padding:14px 22px;border-radius:12px;border:0;background:var(--card);color:var(--tx);font-weight:800;border:1px solid var(--line);cursor:pointer}
+.btn{display:inline-block;background:var(--acc);color:#031a0d;font-weight:800;padding:15px 26px;border-radius:14px;text-decoration:none;transition:transform .15s,box-shadow .2s;box-shadow:0 6px 24px #22c06a40}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px #22c06a60}.btn:active{transform:scale(.97)}
+.btn.o{background:var(--card);color:var(--tx);border:1px solid var(--line);margin-left:8px;box-shadow:none}
+.chart{width:100%;max-width:340px;justify-self:center}
+.chart .ln{stroke-dasharray:420;stroke-dashoffset:420;animation:draw 2.2s .4s ease forwards}
+.chart .bar{transform-origin:bottom;transform-box:fill-box;transform:scaleY(0);animation:grow .8s ease forwards}
+.chart .dot{opacity:0;animation:pop .4s 2.4s ease forwards}
+.tick{display:flex;gap:28px;overflow:hidden;margin:34px -20px 0;padding:10px 0;border-block:1px solid var(--line);color:var(--mut);font:600 13px ui-monospace,Menlo,monospace;white-space:nowrap}
+.tick div{display:flex;gap:28px;animation:marq 28s linear infinite;padding-left:28px}.tick b{color:var(--up,#3ddc97)}.tick i{color:#ff6b6b;font-style:normal}
+form{display:flex;gap:8px;margin:34px 0 0;flex-wrap:wrap}
+input{flex:1;min-width:150px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--tx);font:700 18px ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 3px #22c06a30}
+button{padding:14px 22px;border-radius:12px;background:var(--card);color:var(--tx);font-weight:800;border:1px solid var(--line);cursor:pointer;font-size:16px;transition:transform .12s}button:active{transform:scale(.96)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:50px 0}
+.c{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;transition:transform .2s,border-color .2s}.c:hover{transform:translateY(-3px);border-color:#22c06a80}.c b{display:block;margin-bottom:4px}.c span{color:var(--mut);font-size:14.5px}
+.shots{display:flex;gap:14px;overflow:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}.shots img{height:440px;border-radius:22px;border:1px solid var(--line);scroll-snap-align:center;box-shadow:0 14px 40px #0009}
 footer{margin-top:50px;color:var(--mut);font-size:13px}footer a{color:var(--mut)}
-</style></head><body><div class="w">
-<div class="brand">TRADE<span>ARENA</span></div>
-<h1>Same cash.<br>Same rules.<br><em>Best trader wins.</em></h1>
-<p class="lead">A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and the closing bell decides who is up.</p>
-<a class="btn" href="app/">Open the app</a><a class="btn o" href="#how">How it works</a>
-<form onsubmit="event.preventDefault();var c=this.c.value.trim().toUpperCase();if(c)location.href='app/?join='+encodeURIComponent(c)"><input name="c" maxlength="6" placeholder="GAME CODE" aria-label="Game code"><button>Join a game</button></form>
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;transition-delay:var(--d,0s)}.rv.in{opacity:1;transform:none}
+.hi{animation:fadeUp .8s ease both;animation-delay:var(--d,0s)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}@keyframes grow{to{transform:scaleY(1)}}@keyframes pop{to{opacity:1}}
+@keyframes breathe{50%{opacity:.55}}@keyframes marq{to{transform:translateX(-50%)}}
+@media (max-width:700px){.hero{grid-template-columns:1fr}.chart{max-width:260px}.btn.o{margin:10px 0 0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}.chart .ln{stroke-dashoffset:0}.chart .bar{transform:none}.chart .dot{opacity:1}}
+</style></head><body><div class="glow"></div><div class="w">
+<nav class="hi"><img src="apple-touch-icon.png" alt="">TRADE<span>ARENA</span></nav>
+<div class="hero"><div>
+<h1 class="hi" style="--d:.1s">Same cash.<br>Same rules.<br><em>Best trader wins.</em></h1>
+<p class="lead hi" style="--d:.25s">A paper-trading game for you, your friends and an AI player. Everyone starts with the same money, trades are capped, and the closing bell decides who is up.</p>
+<div class="hi" style="--d:.4s"><a class="btn" href="app/">Open the app</a><a class="btn o" href="#how">How it works</a></div></div>
+<svg class="chart hi" style="--d:.3s" viewBox="0 0 340 260" aria-hidden="true"><g fill="#22c06a">
+<rect class="bar" x="20" y="170" width="34" height="70" rx="6" opacity=".35" style="animation-delay:.1s"/><rect class="bar" x="68" y="140" width="34" height="100" rx="6" opacity=".45" style="animation-delay:.25s"/><rect class="bar" x="116" y="150" width="34" height="90" rx="6" opacity=".4" style="animation-delay:.4s"/><rect class="bar" x="164" y="110" width="34" height="130" rx="6" opacity=".55" style="animation-delay:.55s"/><rect class="bar" x="212" y="90" width="34" height="150" rx="6" opacity=".65" style="animation-delay:.7s"/><rect class="bar" x="260" y="60" width="34" height="180" rx="6" opacity=".8" style="animation-delay:.85s"/></g>
+<path class="ln" d="M12 190 L62 150 L112 160 L162 112 L212 92 L262 52 L318 24" fill="none" stroke="#7bf0b0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle class="dot" cx="318" cy="24" r="7" fill="#7bf0b0"/></svg></div>
+<div class="tick hi" style="--d:.6s" aria-hidden="true"><div><span>SPY <b>▲ benchmark</b></span><span>YOU <b>▲ +4.2%</b></span><span>AI <i>▼ -1.1%</i></span><span>MAYA <b>▲ +2.7%</b></span><span>SAME CASH</span><span>SAME RULES</span><span>SPY <b>▲ benchmark</b></span><span>YOU <b>▲ +4.2%</b></span><span>AI <i>▼ -1.1%</i></span><span>MAYA <b>▲ +2.7%</b></span><span>SAME CASH</span><span>SAME RULES</span></div></div>
+<form class="rv" onsubmit="event.preventDefault();var c=this.c.value.trim().toUpperCase();if(c)location.href='app/?join='+encodeURIComponent(c)"><input name="c" maxlength="6" placeholder="GAME CODE" aria-label="Game code" autocapitalize="characters" autocomplete="off"><button>Join a game</button></form>
 <div class="grid" id="how">
-<div class="c"><b>Equal start</b><span>Pick the starting amount and the time frame: a week, a month, your own end date.</span></div>
-<div class="c"><b>Fair-play limits</b><span>Max trades per day, max positions, and a cap on how much goes into one stock.</span></div>
-<div class="c"><b>An AI opponent</b><span>The host adds an AI player. It sees the same prices and obeys the same limits.</span></div>
-<div class="c"><b>Learn as you go</b><span>Add a one-line "why" to every trade. After each close everyone sees the notes, and the AI coach writes a debrief at the end.</span></div>
-<div class="c"><b>Join anywhere</b><span>Friends join with a code or QR. Offline? Send a trade card file instead.</span></div>
-<div class="c"><b>No account, no cost</b><span>Install it from your browser. Paper money only.</span></div></div>
-<div class="shots"><img src="app/shot-phone-1.png" alt="Leaderboard" loading="lazy"><img src="app/shot-phone-2.png" alt="Portfolio and queued orders" loading="lazy"></div>
-<footer>&copy; 2026 LAZLAB Creations. All Rights Reserved. &middot; <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">lazlab.io@gmail.com</a><br>Paper trading for fun and learning. Not financial advice.</footer>
-</div></body></html>
+<div class="c rv"><b>Equal start</b><span>Pick the starting amount and the time frame: a day, a week, a month, your own end date.</span></div>
+<div class="c rv" style="--d:.08s"><b>Fair-play limits</b><span>Max trades per day, max positions, and a cap on how much goes into one stock.</span></div>
+<div class="c rv" style="--d:.16s"><b>An AI opponent</b><span>The host adds an AI player. It sees the same prices and obeys the same limits.</span></div>
+<div class="c rv"><b>Learn as you go</b><span>Add a one-line "why" to every trade. After each close everyone sees the notes, and the AI coach writes a debrief at the end.</span></div>
+<div class="c rv" style="--d:.08s"><b>Join anywhere</b><span>Friends join with a code or QR. Offline? Send a trade card file instead.</span></div>
+<div class="c rv" style="--d:.16s"><b>No account, no cost</b><span>Install it from your browser. Paper money only.</span></div></div>
+<div class="shots rv"><img src="app/shot-phone-1.png" alt="Leaderboard" loading="lazy"><img src="app/shot-phone-2.png" alt="Portfolio and queued orders" loading="lazy"></div>
+<footer class="rv">&copy; 2026 LAZLAB Creations. All Rights Reserved. &middot; <a href="mailto:lazlab.io@gmail.com?subject=Trade%20Arena">Contact us</a><br>Paper trading for fun and learning. Not financial advice.</footer>
+</div>
+<script>
+try{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});document.querySelectorAll('.rv').forEach(function(n){io.observe(n)})}catch(e){document.querySelectorAll('.rv').forEach(function(n){n.classList.add('in')})}
+</script></body></html>

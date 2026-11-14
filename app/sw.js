@@ -1,6 +1,6 @@
 // Trade Arena service worker: app shell offline, never caches prices, Firebase, or Groq.
-const CACHE = 'trade-arena-v1.5.0';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'trade-arena-v1.6.0';
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon-32.png'];
 const LIBS = ['www.gstatic.com', 'cdnjs.cloudflare.com'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {

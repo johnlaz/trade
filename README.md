@@ -101,6 +101,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 ## Changelog
 
 - **1.5.0**: optional player email (host-only, BCC "Email everyone"); market status pill with countdown and US holidays; AI style option ("No style" by default); AI watchlist expanded to about 55 tickers; AI trade notes now name the idea behind each trade.
+- **1.6.0**: iOS polish (180px home-screen icon, translucent status bar, no input focus-zoom, tap feedback, app icon in header); animated landing page with scroll reveals; "Contact us" link.
 - **1.4.0**: rule presets (Casual, Stock-picker, Diversify, Beginner, Sprint); order confirmation and after-4pm warning; quick-pick ticker chips; sell hint; allocation bar; "days ready to settle" badge; share daily recap; model choice in Settings now saves; fixed a stale-ticker lookup that could queue the wrong stock.
 - **1.3.2**: prices now go through a Cloudflare Worker first (fast and reliable), with the free proxies as fallback.
 - **1.3.1**: dropped the dead corsproxy.io route, smaller default AI watchlist, added docs/worker.js for a personal price proxy.
