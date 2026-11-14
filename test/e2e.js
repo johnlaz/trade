@@ -21,7 +21,7 @@ function yahoo(t) {
 (async () => {
   const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await ctx.route(/query[12]\.finance\.yahoo\.com/, r => { const t = decodeURIComponent(r.request().url().match(/chart\/([^?]+)/)[1]); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(yahoo(t)) }); });
+  await ctx.route(/query[12]\.finance\.yahoo\.com/, r => { const t = decodeURIComponent(r.request().url().match(/chart(?:\/|%2F)([^%?&]+)/)[1]); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(yahoo(t)) }); });
   await ctx.route(/api\.groq\.com\/openai\/v1\/models/, r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ data: [{ id: 'qwen/qwen3.6-27b', created: 5, active: true }, { id: 'llama-3.3-70b-versatile', created: 4, active: true }, { id: 'whisper-large-v3', created: 9, active: true }] }) }));
   let groqBody = null;
   await ctx.route(/api\.groq\.com\/openai\/v1\/chat\/completions/, r => { groqBody = JSON.parse(r.request().postData()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ choices: [{ message: { content: '{"orders":[{"s":"buy","t":"MSFT","q":50,"n":"quality compounder"},{"s":"buy","t":"NVDA","q":9999,"n":"too big"}],"summary":"Starting with a core holding."}' } }] }) }); });

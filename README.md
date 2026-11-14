@@ -59,7 +59,7 @@ Leave "Play online" off when creating a game. Share the **game file** from the H
 
 ## Price data
 
-Daily bars come from Yahoo Finance's public chart endpoint through free CORS proxies (same hedged-race approach as AXIOM). The free proxies are unreliable (corsproxy.io now requires a key), so for real games set up your own free Cloudflare Worker: create a Worker, paste `docs/worker.js`, deploy, and put its URL in Settings → Price proxy. Prices are end-of-day for settlement, delayed for the order screen.
+Daily bars come from Yahoo Finance's public chart endpoint through free CORS proxies (same hedged-race approach as AXIOM). The free proxies are unreliable (corsproxy.io now requires a key), so the app now routes through a free Cloudflare Worker (`docs/worker.js`, it only forwards Yahoo chart requests). To use your own instead, deploy that file as a Worker and put its URL in Settings → Price proxy. Prices are end-of-day for settlement, delayed for the order screen.
 
 ## Limits worth knowing
 
@@ -99,6 +99,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.3.2**: prices now go through a Cloudflare Worker first (fast and reliable), with the free proxies as fallback.
 - **1.3.1**: dropped the dead corsproxy.io route, smaller default AI watchlist, added docs/worker.js for a personal price proxy.
 - **1.3.0**: live estimates on the Trade tab: queued orders show the current price and gain/loss since placed, positions use live prices (refreshed every minute while open).
 - **1.2.1**: the trade card button only shows in offline games (online players log their own orders).

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.3.1';
+const APP_VERSION = '1.3.2';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -24,6 +24,8 @@ const PROXIES = [
   { id: 'allorigins', url: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
   { id: 'codetabs', url: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) }
 ];
+// Shared price proxy (a free Cloudflare Worker that only forwards Yahoo chart requests). A proxy URL set in Settings overrides it.
+const DEFAULT_PROXY = 'https://trade-prices.johnlazzaro25.workers.dev';
 let proxyStats = lsGet('ta_proxy_stats', {});
 const proxyScore = id => { const s = proxyStats[id] || { ok: 0, fail: 0, ms: 0 }; return s.ok - s.fail * 1.5 - (s.ms || 0) / 4000; };
 function proxyNote(id, ok, ms) {
@@ -73,7 +75,7 @@ function proxyGet(urls) {
   const order = PROXIES.slice().sort((a, b) => proxyScore(b.id) - proxyScore(a.id));
   const mk = (id, mkUrl, u) => ({ id, run: async signal => parseYahoo(await fetch(mkUrl(u), { signal })) });
   const attempts = [];
-  const custom = cleanProxyUrl(lsRaw('ta_proxy'));
+  const custom = cleanProxyUrl(lsRaw('ta_proxy')) || DEFAULT_PROXY;
   if (custom) urls.forEach(u => attempts.push(mk('custom', x => custom + (custom.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(x), u)));
   attempts.push(mk('direct', x => x, urls[0]));
   urls.forEach(u => order.forEach(p => attempts.push(mk(p.id, p.url, u))));
