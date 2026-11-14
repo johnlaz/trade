@@ -2,7 +2,7 @@
 const fs = require('fs');
 const src = fs.readFileSync(__dirname + '/../src/10_engine.js', 'utf8');
 const m = src.match(/\/\/ <ENGINE>([\s\S]*?)\/\/ <\/ENGINE>/);
-const E = new Function(m[1] + '; return {etParts,dayKey,addDays,isWeekday,nextWeekday,prevWeekday,fillDayFor,canSettle,normTicker,applyOrder,settleDay,equityOf,retPct,round2};')();
+const E = new Function(m[1] + '; return {etParts,dayKey,addDays,isWeekday,nextWeekday,prevWeekday,fillDayFor,canSettle,normTicker,applyOrder,settleDay,equityOf,retPct,round2,marketStatus,nextMarketDay};')();
 let fails = 0;
 function eq(a, b, msg) { const ok = JSON.stringify(a) === JSON.stringify(b); if (!ok) { fails++; console.log('FAIL', msg, '\n  got', JSON.stringify(a), '\n  exp', JSON.stringify(b)); } else console.log('ok  ', msg); }
 const ms = (iso) => Date.parse(iso); // helper (UTC ISO)
@@ -72,5 +72,10 @@ eq(out.equity.p2, 100000, 'idle player gets starting cash equity');
 eq(out.fills.find(f => f.id === 'b').pl, 2000, 'sell P/L in fill');
 const out2 = E.settleDay(['p1'], { p1: { cash: 1000, pos: {} } }, { p1: [{ id: 'z', s: 'buy', t: 'NOPE', q: 1, ts: 1 }] }, R, closes, '2026-11-17');
 eq(out2.fills[0].st, 'rejected', 'missing close price rejected');
+const ms2 = x => Date.parse(x);
+eq(E.marketStatus(ms2('2026-11-13T17:00:00Z')).open, true, 'Fri 12:00 ET market open');
+eq(E.marketStatus(ms2('2026-11-13T17:00:00Z')).left, 240, 'Fri 12:00 ET closes in 4h');
+eq(E.marketStatus(ms2('2026-11-14T15:00:00Z')).day, '2026-11-16', 'Saturday: next fill Monday');
+eq(E.marketStatus(ms2('2026-11-25T22:00:00Z')).day, '2026-11-27', 'Wed after close: skips Thanksgiving to Fri');
 console.log(fails ? '\n' + fails + ' FAILED' : '\nAll passed');
 process.exit(fails ? 1 : 0);

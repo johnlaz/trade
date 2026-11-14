@@ -30,6 +30,15 @@ function canSettle(day, nowMs) {
   return p.key === day && p.min >= SETTLE_MIN;
 }
 
+// US market holidays (display only; settle still asks before skipping a day)
+const MKT_HOLIDAYS = new Set(['2026-01-01','2026-01-19','2026-02-16','2026-04-03','2026-05-25','2026-06-19','2026-07-03','2026-09-07','2026-11-26','2026-12-25','2027-01-01','2027-01-18','2027-02-15','2027-03-26','2027-05-31','2027-06-18','2027-07-05','2027-09-06','2027-11-25','2027-12-24']);
+function nextMarketDay(key) { let k = nextWeekday(key); while (MKT_HOLIDAYS.has(k)) k = nextWeekday(k); return k; }
+function marketStatus(ms) {
+  const p = etParts(ms), openDay = isWeekday(p.key) && !MKT_HOLIDAYS.has(p.key);
+  if (openDay && p.min >= 570 && p.min < CLOSE_MIN) { const l = CLOSE_MIN - p.min; return { open: true, day: p.key, left: l }; }
+  const day = (openDay && p.min < CLOSE_MIN) ? p.key : nextMarketDay(p.key);
+  return { open: false, day, pre: openDay && p.min < 570 };
+}
 const TICKER_RE = /^[A-Z]{1,5}(-[A-Z]{1,2})?$/;
 function normTicker(t) { return String(t || '').trim().toUpperCase().replace(/\./g, '-'); }
 function round2(n) { return Math.round(n * 100) / 100; }

@@ -94,6 +94,7 @@ function viewCreate() {
     '<div class="note small" style="margin-top:14px">Long-only, whole shares, no leverage. Orders placed before 4:00 pm ET fill at that day’s close; later orders fill at the next close.</div></div>' +
     '<div class="sec">Players</div><div class="card">' +
     '<label class="row" style="gap:12px"><input type="checkbox" id="c-ai" ' + (CF.ai ? 'checked' : '') + ' style="width:22px;height:22px"><span><b>Add an AI player</b><br><span class="small mut">' + (hasKey ? 'Uses your Groq key. Players see it as one of them.' : 'Needs a free Groq key — add it in Settings before starting.') + '</span></span></label>' +
+    '<label class="f">AI STYLE (OPTIONAL)</label><select class="in" id="c-style"><option value="">No style: the AI decides freely</option>' + Object.keys(AI_STYLE_LABEL).map(k => '<option value="' + k + '"' + (CF.style === k ? ' selected' : '') + '>' + AI_STYLE_LABEL[k] + '</option>').join('') + '</select><div class="small mut" style="margin-top:6px">A style nudges how the AI trades and shows on its card. Leave it on “No style” to let it make its own calls.</div>' +
     '<label class="row" style="gap:12px;margin-top:14px"><input type="checkbox" id="c-online" ' + (hasFb ? 'checked' : 'disabled') + ' style="width:22px;height:22px"><span><b>Play online with friends</b><br><span class="small mut">' + (hasFb ? 'Friends join with a code or link.' : 'Firebase isn’t set up, so this will be an offline game: friends send you trade cards.') + '</span></span></label></div>' +
     '<button class="btn primary block" style="margin-top:18px" data-act="doCreate">Create game</button></div>';
 }
@@ -106,7 +107,7 @@ function readCreate() {
   const o = {
     name: (v('c-name') || '').trim() || 'Trade Arena game', myName: (v('c-me') || '').trim(),
     cash, maxTr: Math.round(Number(v('c-tr'))), maxPos: Math.round(Number(v('c-pos'))), maxPct: Math.round(Number(v('c-pct'))),
-    uni, list, dur: CF.dur, endDay: null, ai: $('#c-ai').checked, online: $('#c-online').checked
+    uni, list, dur: CF.dur, endDay: null, ai: $('#c-ai').checked, aiStyle: v('c-style') || '', online: $('#c-online').checked
   };
   if (!o.myName) throw new Error('Enter your name.');
   if (!(cash >= 1000 && cash <= 10000000)) throw new Error('Starting cash must be between $1,000 and $10,000,000.');
@@ -148,6 +149,8 @@ function openJoin(prefill) {
   openSheet('<h2>Join a game</h2><div class="mut small">Enter the code your host shared.</div>' +
     '<label class="f">GAME CODE</label><input class="in code" id="j-code" maxlength="6" autocapitalize="characters" autocomplete="off" value="' + esc(prefill || '') + '" style="text-transform:uppercase;font-size:20px">' +
     '<label class="f">YOUR NAME</label><input class="in" id="j-name" maxlength="20" value="' + esc(lsRaw('ta_me')) + '">' +
+    '<label class="f">EMAIL (OPTIONAL)</label><input class="in" id="j-email" type="email" autocomplete="email" placeholder="So the host can send recaps">' +
+    '<div class="small mut" style="margin-top:6px">Only the host can see it, and only for this game.</div>' +
     '<button class="btn primary block" style="margin-top:16px" data-act="doJoin">Join</button>' +
     '<div class="sec">No internet game? Use a game file</div>' +
     '<div class="small mut">If your host sent you a game file, load it here and pick who you are.</div>' +

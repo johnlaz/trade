@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -17,7 +17,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Large-cap preset for "ticker list" games and the AI watchlist (a convenience list, not an official index).
 const LARGE_CAPS = 'AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V UNH XOM LLY MA JNJ PG HD COST MRK ABBV CVX PEP KO WMT BAC CRM NFLX AMD ORCL ADBE TMO MCD CSCO ACN ABT LIN DHR WFC TXN PM DIS VZ NEE INTC INTU AMGN UPS PFE IBM QCOM LOW HON UNP CAT RTX SPGI GE BA AMAT BMY GS MS PLD NOW DE SBUX MDT BLK ISRG LMT AXP GILD MDLZ TJX ADI BKNG ADP CVS CB SYK VRTX REGN C ZTS SO MO USB COP T MMM F GM SPY QQQ DIA IWM'.split(' ');
-const AI_WATCH_DEFAULT = 'AAPL MSFT NVDA AMZN GOOGL META TSLA JPM XOM LLY COST NFLX SPY QQQ IWM'.split(' ');
+const AI_WATCH_DEFAULT = ('AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO NFLX CRM ORCL AMD INTC JPM V MA BAC GS UNH LLY JNJ PFE MRK ABBV PG KO PEP COST WMT HD XOM CVX CAT GE BA DIS LIN NEE T VZ SPY QQQ IWM DIA XLK XLF XLE XLV XLU TLT GLD').split(' ');
+const AI_STYLES = {
+  value: 'Your style: value investor. Favor quality companies trading below their recent trend or well off their highs, and avoid chasing stocks that just ran up.',
+  momentum: 'Your style: momentum trader. Favor stocks and ETFs with strong 20-day trends trading above their 50-day average, and sell what loses momentum.',
+  contrarian: 'Your style: contrarian. Look for beaten-down names and sectors that may bounce, and trim what looks overextended.',
+  cautious: 'Your style: cautious and diversified. Spread across sectors and ETFs, hold some cash, and avoid big concentrated bets.'
+};
+const AI_STYLE_LABEL = { value: 'Value', momentum: 'Momentum', contrarian: 'Contrarian', cautious: 'Cautious' };
 
 // ── Price fetching: hedged CORS-proxy race (same approach as AXIOM) ──
 const PROXIES = [

@@ -136,7 +136,8 @@ async function aiOrdersFor(pid, day, pf, watch, onProg) {
   const univ = r.uni === 'list' ? `You may only BUY these tickers: ${(r.list || []).join(', ')}.` : 'You may buy any US-listed stock or ETF, but only the tickers in the market table below have data for you.';
   const sys = 'You are a player in a paper-trading game competing against humans. Goal: finish with the highest portfolio value. ' +
     'Reply with ONLY a JSON object: {"orders":[{"s":"buy"|"sell","t":"TICKER","q":<whole number>,"n":"<reason, max 100 chars>"}],"summary":"<one sentence>"}. ' +
-    'Orders fill at the close of the trading day. Use at most the allowed number of orders; fewer (or none) is fine. Never invent prices.';
+    'Orders fill at the close of the trading day. Use at most the allowed number of orders; fewer (or none) is fine. Never invent prices. ' +
+    'This game is for learning: each order note "n" must give the reason in plain words and name the idea behind it (for example momentum, valuation, diversification, risk control, or taking a profit), and "summary" should be one sentence a beginner could learn from. ' + (AI_STYLES[META().aiStyle] || '');
   const usr = `Trading day: ${day} (orders fill at today's close; you only see data through the previous close).
 Rules: long-only, whole shares, max ${r.maxTr} orders today, max ${r.maxPos} different positions${r.maxPct > 0 ? `, no single stock over ${r.maxPct}% of total value` : ''}. ${univ}
 Cash: ${pf.cash.toFixed(2)}

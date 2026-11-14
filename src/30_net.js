@@ -19,7 +19,7 @@ const S = {
   view: 'home', tab: 'board', game: null, uid: null, fbOk: false, fbErr: '',
   G: emptyG(), loaded: {}, off: [], ref: null, notFound: false, busy: null
 };
-function emptyG() { return { meta: null, players: {}, portfolios: {}, fills: {}, prices: {}, equity: {}, orders: {} }; }
+function emptyG() { return { meta: null, players: {}, portfolios: {}, fills: {}, prices: {}, equity: {}, orders: {}, contacts: {} }; }
 
 function fbConfig() {
   const o = lsGet('ta_fb_config', null);
@@ -105,6 +105,11 @@ async function openGame(entry) {
       }, err => { toast('Sync error: ' + err.message, 'bad'); });
       S.off.push(() => r.off('value', fn));
     });
+    if (entry.role === 'host') {
+      const cr = g.child('contacts');
+      const cf = cr.on('value', s => { S.G.contacts = s.val() || {}; sched(); }, () => {});
+      S.off.push(() => cr.off('value', cf));
+    }
     const or = entry.role === 'host' ? g.child('orders') : g.child('orders/' + S.uid);
     const fn = or.on('value', s => {
       S.G.orders = entry.role === 'host' ? (s.val() || {}) : { [S.uid]: s.val() || {} };
@@ -123,6 +128,7 @@ async function createGame(opt) {
     r: { cash: opt.cash, maxPos: opt.maxPos, maxTr: opt.maxTr, maxPct: opt.maxPct, uni: opt.uni, list: opt.list },
     dur: opt.dur, endDay: opt.endDay || null, ver: APP_VERSION
   };
+  if (opt.aiStyle) meta.aiStyle = opt.aiStyle;
   const mePlayer = { n: opt.myName, c: 0, t: 0 };
   if (opt.online) {
     const db = await fbInit();
@@ -144,7 +150,8 @@ async function createGame(opt) {
     saveGameEntry(entry); await openGame(entry);
   }
 }
-async function joinOnline(code, name) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+async function joinOnline(code, name, email) {
   code = String(code || '').trim().toUpperCase();
   if (!/^[A-HJ-NP-Z2-9]{6}$/.test(code)) throw new Error('Codes are 6 letters and numbers.');
   const db = await fbInit();
@@ -159,6 +166,7 @@ async function joinOnline(code, name) {
     const pl = await g.child('players').once('value');
     const n = Object.keys(pl.val() || {}).length;
     await g.child('players/' + S.uid).set({ n: name.slice(0, 20), c: n % COLORS.length, t: firebase.database.ServerValue.TIMESTAMP });
+    if (EMAIL_RE.test(email || '')) { try { await g.child('contacts/' + S.uid).set(email.trim().slice(0, 100)); } catch (e) {} }   // optional; never blocks joining
   }
   const role = meta.hostUid === S.uid ? 'host' : 'player';
   const entry = { code, role, mode: 'fb', me: S.uid, name: meta.name };

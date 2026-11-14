@@ -124,6 +124,7 @@ textarea.in{min-height:84px;resize:vertical}
 .hide{display:none!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.mkt{text-align:center;font-size:12.5px;color:var(--mut);margin:2px 0 10px;line-height:1.7}
 </style>
 </head>
 <body>
@@ -163,6 +164,15 @@ function canSettle(day, nowMs) {
   return p.key === day && p.min >= SETTLE_MIN;
 }
 
+// US market holidays (display only; settle still asks before skipping a day)
+const MKT_HOLIDAYS = new Set(['2026-01-01','2026-01-19','2026-02-16','2026-04-03','2026-05-25','2026-06-19','2026-07-03','2026-09-07','2026-11-26','2026-12-25','2027-01-01','2027-01-18','2027-02-15','2027-03-26','2027-05-31','2027-06-18','2027-07-05','2027-09-06','2027-11-25','2027-12-24']);
+function nextMarketDay(key) { let k = nextWeekday(key); while (MKT_HOLIDAYS.has(k)) k = nextWeekday(k); return k; }
+function marketStatus(ms) {
+  const p = etParts(ms), openDay = isWeekday(p.key) && !MKT_HOLIDAYS.has(p.key);
+  if (openDay && p.min >= 570 && p.min < CLOSE_MIN) { const l = CLOSE_MIN - p.min; return { open: true, day: p.key, left: l }; }
+  const day = (openDay && p.min < CLOSE_MIN) ? p.key : nextMarketDay(p.key);
+  return { open: false, day, pre: openDay && p.min < 570 };
+}
 const TICKER_RE = /^[A-Z]{1,5}(-[A-Z]{1,2})?$/;
 function normTicker(t) { return String(t || '').trim().toUpperCase().replace(/\./g, '-'); }
 function round2(n) { return Math.round(n * 100) / 100; }
@@ -250,7 +260,7 @@ function retPct(eq, base) { return (eq / base - 1) * 100; }
 // ══════════════════════════════════════════
 //  HELPERS + MARKET DATA
 // ══════════════════════════════════════════
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
@@ -266,7 +276,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Large-cap preset for "ticker list" games and the AI watchlist (a convenience list, not an official index).
 const LARGE_CAPS = 'AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V UNH XOM LLY MA JNJ PG HD COST MRK ABBV CVX PEP KO WMT BAC CRM NFLX AMD ORCL ADBE TMO MCD CSCO ACN ABT LIN DHR WFC TXN PM DIS VZ NEE INTC INTU AMGN UPS PFE IBM QCOM LOW HON UNP CAT RTX SPGI GE BA AMAT BMY GS MS PLD NOW DE SBUX MDT BLK ISRG LMT AXP GILD MDLZ TJX ADI BKNG ADP CVS CB SYK VRTX REGN C ZTS SO MO USB COP T MMM F GM SPY QQQ DIA IWM'.split(' ');
-const AI_WATCH_DEFAULT = 'AAPL MSFT NVDA AMZN GOOGL META TSLA JPM XOM LLY COST NFLX SPY QQQ IWM'.split(' ');
+const AI_WATCH_DEFAULT = ('AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO NFLX CRM ORCL AMD INTC JPM V MA BAC GS UNH LLY JNJ PFE MRK ABBV PG KO PEP COST WMT HD XOM CVX CAT GE BA DIS LIN NEE T VZ SPY QQQ IWM DIA XLK XLF XLE XLV XLU TLT GLD').split(' ');
+const AI_STYLES = {
+  value: 'Your style: value investor. Favor quality companies trading below their recent trend or well off their highs, and avoid chasing stocks that just ran up.',
+  momentum: 'Your style: momentum trader. Favor stocks and ETFs with strong 20-day trends trading above their 50-day average, and sell what loses momentum.',
+  contrarian: 'Your style: contrarian. Look for beaten-down names and sectors that may bounce, and trim what looks overextended.',
+  cautious: 'Your style: cautious and diversified. Spread across sectors and ETFs, hold some cash, and avoid big concentrated bets.'
+};
+const AI_STYLE_LABEL = { value: 'Value', momentum: 'Momentum', contrarian: 'Contrarian', cautious: 'Cautious' };
 
 // ── Price fetching: hedged CORS-proxy race (same approach as AXIOM) ──
 const PROXIES = [
@@ -395,7 +412,7 @@ const S = {
   view: 'home', tab: 'board', game: null, uid: null, fbOk: false, fbErr: '',
   G: emptyG(), loaded: {}, off: [], ref: null, notFound: false, busy: null
 };
-function emptyG() { return { meta: null, players: {}, portfolios: {}, fills: {}, prices: {}, equity: {}, orders: {} }; }
+function emptyG() { return { meta: null, players: {}, portfolios: {}, fills: {}, prices: {}, equity: {}, orders: {}, contacts: {} }; }
 
 function fbConfig() {
   const o = lsGet('ta_fb_config', null);
@@ -481,6 +498,11 @@ async function openGame(entry) {
       }, err => { toast('Sync error: ' + err.message, 'bad'); });
       S.off.push(() => r.off('value', fn));
     });
+    if (entry.role === 'host') {
+      const cr = g.child('contacts');
+      const cf = cr.on('value', s => { S.G.contacts = s.val() || {}; sched(); }, () => {});
+      S.off.push(() => cr.off('value', cf));
+    }
     const or = entry.role === 'host' ? g.child('orders') : g.child('orders/' + S.uid);
     const fn = or.on('value', s => {
       S.G.orders = entry.role === 'host' ? (s.val() || {}) : { [S.uid]: s.val() || {} };
@@ -499,6 +521,7 @@ async function createGame(opt) {
     r: { cash: opt.cash, maxPos: opt.maxPos, maxTr: opt.maxTr, maxPct: opt.maxPct, uni: opt.uni, list: opt.list },
     dur: opt.dur, endDay: opt.endDay || null, ver: APP_VERSION
   };
+  if (opt.aiStyle) meta.aiStyle = opt.aiStyle;
   const mePlayer = { n: opt.myName, c: 0, t: 0 };
   if (opt.online) {
     const db = await fbInit();
@@ -520,7 +543,8 @@ async function createGame(opt) {
     saveGameEntry(entry); await openGame(entry);
   }
 }
-async function joinOnline(code, name) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+async function joinOnline(code, name, email) {
   code = String(code || '').trim().toUpperCase();
   if (!/^[A-HJ-NP-Z2-9]{6}$/.test(code)) throw new Error('Codes are 6 letters and numbers.');
   const db = await fbInit();
@@ -535,6 +559,7 @@ async function joinOnline(code, name) {
     const pl = await g.child('players').once('value');
     const n = Object.keys(pl.val() || {}).length;
     await g.child('players/' + S.uid).set({ n: name.slice(0, 20), c: n % COLORS.length, t: firebase.database.ServerValue.TIMESTAMP });
+    if (EMAIL_RE.test(email || '')) { try { await g.child('contacts/' + S.uid).set(email.trim().slice(0, 100)); } catch (e) {} }   // optional; never blocks joining
   }
   const role = meta.hostUid === S.uid ? 'host' : 'player';
   const entry = { code, role, mode: 'fb', me: S.uid, name: meta.name };
@@ -739,7 +764,8 @@ async function aiOrdersFor(pid, day, pf, watch, onProg) {
   const univ = r.uni === 'list' ? `You may only BUY these tickers: ${(r.list || []).join(', ')}.` : 'You may buy any US-listed stock or ETF, but only the tickers in the market table below have data for you.';
   const sys = 'You are a player in a paper-trading game competing against humans. Goal: finish with the highest portfolio value. ' +
     'Reply with ONLY a JSON object: {"orders":[{"s":"buy"|"sell","t":"TICKER","q":<whole number>,"n":"<reason, max 100 chars>"}],"summary":"<one sentence>"}. ' +
-    'Orders fill at the close of the trading day. Use at most the allowed number of orders; fewer (or none) is fine. Never invent prices.';
+    'Orders fill at the close of the trading day. Use at most the allowed number of orders; fewer (or none) is fine. Never invent prices. ' +
+    'This game is for learning: each order note "n" must give the reason in plain words and name the idea behind it (for example momentum, valuation, diversification, risk control, or taking a profit), and "summary" should be one sentence a beginner could learn from. ' + (AI_STYLES[META().aiStyle] || '');
   const usr = `Trading day: ${day} (orders fill at today's close; you only see data through the previous close).
 Rules: long-only, whole shares, max ${r.maxTr} orders today, max ${r.maxPos} different positions${r.maxPct > 0 ? `, no single stock over ${r.maxPct}% of total value` : ''}. ${univ}
 Cash: ${pf.cash.toFixed(2)}
@@ -977,6 +1003,7 @@ function viewCreate() {
     '<div class="note small" style="margin-top:14px">Long-only, whole shares, no leverage. Orders placed before 4:00 pm ET fill at that day’s close; later orders fill at the next close.</div></div>' +
     '<div class="sec">Players</div><div class="card">' +
     '<label class="row" style="gap:12px"><input type="checkbox" id="c-ai" ' + (CF.ai ? 'checked' : '') + ' style="width:22px;height:22px"><span><b>Add an AI player</b><br><span class="small mut">' + (hasKey ? 'Uses your Groq key. Players see it as one of them.' : 'Needs a free Groq key — add it in Settings before starting.') + '</span></span></label>' +
+    '<label class="f">AI STYLE (OPTIONAL)</label><select class="in" id="c-style"><option value="">No style: the AI decides freely</option>' + Object.keys(AI_STYLE_LABEL).map(k => '<option value="' + k + '"' + (CF.style === k ? ' selected' : '') + '>' + AI_STYLE_LABEL[k] + '</option>').join('') + '</select><div class="small mut" style="margin-top:6px">A style nudges how the AI trades and shows on its card. Leave it on “No style” to let it make its own calls.</div>' +
     '<label class="row" style="gap:12px;margin-top:14px"><input type="checkbox" id="c-online" ' + (hasFb ? 'checked' : 'disabled') + ' style="width:22px;height:22px"><span><b>Play online with friends</b><br><span class="small mut">' + (hasFb ? 'Friends join with a code or link.' : 'Firebase isn’t set up, so this will be an offline game: friends send you trade cards.') + '</span></span></label></div>' +
     '<button class="btn primary block" style="margin-top:18px" data-act="doCreate">Create game</button></div>';
 }
@@ -989,7 +1016,7 @@ function readCreate() {
   const o = {
     name: (v('c-name') || '').trim() || 'Trade Arena game', myName: (v('c-me') || '').trim(),
     cash, maxTr: Math.round(Number(v('c-tr'))), maxPos: Math.round(Number(v('c-pos'))), maxPct: Math.round(Number(v('c-pct'))),
-    uni, list, dur: CF.dur, endDay: null, ai: $('#c-ai').checked, online: $('#c-online').checked
+    uni, list, dur: CF.dur, endDay: null, ai: $('#c-ai').checked, aiStyle: v('c-style') || '', online: $('#c-online').checked
   };
   if (!o.myName) throw new Error('Enter your name.');
   if (!(cash >= 1000 && cash <= 10000000)) throw new Error('Starting cash must be between $1,000 and $10,000,000.');
@@ -1031,6 +1058,8 @@ function openJoin(prefill) {
   openSheet('<h2>Join a game</h2><div class="mut small">Enter the code your host shared.</div>' +
     '<label class="f">GAME CODE</label><input class="in code" id="j-code" maxlength="6" autocapitalize="characters" autocomplete="off" value="' + esc(prefill || '') + '" style="text-transform:uppercase;font-size:20px">' +
     '<label class="f">YOUR NAME</label><input class="in" id="j-name" maxlength="20" value="' + esc(lsRaw('ta_me')) + '">' +
+    '<label class="f">EMAIL (OPTIONAL)</label><input class="in" id="j-email" type="email" autocomplete="email" placeholder="So the host can send recaps">' +
+    '<div class="small mut" style="margin-top:6px">Only the host can see it, and only for this game.</div>' +
     '<button class="btn primary block" style="margin-top:16px" data-act="doJoin">Join</button>' +
     '<div class="sec">No internet game? Use a game file</div>' +
     '<div class="small mut">If your host sent you a game file, load it here and pick who you are.</div>' +
@@ -1075,7 +1104,7 @@ function viewGame() {
   if (!m) return '<div class="wrap">' + topBar + '<div class="card mut">Loading…</div></div>';
   const tabs = [['board', '🏆', 'Board'], ['trade', '📈', 'Trade'], ['feed', '🧾', 'Feed']]; if (isHost()) tabs.push(['host', '⚙️', 'Host']);
   const body = S.tab === 'trade' ? tabTrade() : S.tab === 'feed' ? tabFeed() : S.tab === 'host' && isHost() ? tabHost() : tabBoard();
-  return '<div class="wrap">' + topBar + body + footer() + '</div><nav class="tabbar"><div class="in-bar">' + tabs.map(t => '<button data-act="tab" data-v="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '"><span>' + t[1] + '</span>' + t[2] + '</button>').join('') + '</div></nav>';
+  return '<div class="wrap">' + topBar + '<div class="mkt" id="mkt">' + mktPill() + '</div>' + body + footer() + '</div><nav class="tabbar"><div class="in-bar">' + tabs.map(t => '<button data-act="tab" data-v="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '"><span>' + t[1] + '</span>' + t[2] + '</button>').join('') + '</div></nav>';
 }
 function afterGameRender() {
   const q = $('#qr-box');
@@ -1118,7 +1147,7 @@ function tabBoard() {
   let spyDone = st.spy == null;
   st.rows.forEach((x, i) => {
     if (!spyDone && st.spy > x.pct) { h += benchRow(st.spy); spyDone = true; }
-    h += '<div class="lrow ' + (x.pid === me ? 'me' : '') + '" data-act="viewPlayer" data-id="' + esc(x.pid) + '" style="cursor:pointer"><span class="rk">' + (i + 1) + '</span><div><div class="nm"><span class="dot" style="background:' + x.color + '"></span>' + esc(x.name) + (x.ai ? ' <span class="chip ai">AI' + (x.model ? ' · ' + esc(x.model.split('/').pop()) : '') + '</span>' : '') + (x.pid === me ? ' <span class="chip acc">You</span>' : '') + '</div><div class="sub">' + x.npos + ' position' + (x.npos === 1 ? '' : 's') + ' · ' + money0(x.cash) + ' cash</div></div><div class="pv num"><b>' + money0(x.val) + '</b><span class="' + (x.pct >= 0 ? 'up' : 'dn') + ' small">' + pctTxt(x.pct) + '</span></div></div>';
+    h += '<div class="lrow ' + (x.pid === me ? 'me' : '') + '" data-act="viewPlayer" data-id="' + esc(x.pid) + '" style="cursor:pointer"><span class="rk">' + (i + 1) + '</span><div><div class="nm"><span class="dot" style="background:' + x.color + '"></span>' + esc(x.name) + (x.ai ? ' <span class="chip ai">AI' + (META().aiStyle ? ' · ' + esc(AI_STYLE_LABEL[META().aiStyle] || '') : (x.model ? ' · ' + esc(x.model.split('/').pop()) : '')) + '</span>' : '') + (x.pid === me ? ' <span class="chip acc">You</span>' : '') + '</div><div class="sub">' + x.npos + ' position' + (x.npos === 1 ? '' : 's') + ' · ' + money0(x.cash) + ' cash</div></div><div class="pv num"><b>' + money0(x.val) + '</b><span class="' + (x.pct >= 0 ? 'up' : 'dn') + ' small">' + pctTxt(x.pct) + '</span></div></div>';
   });
   if (!spyDone) h += benchRow(st.spy);
   h += '</div>';
@@ -1228,6 +1257,10 @@ function tabHost() {
     h += '<div class="sec">Offline players</div><div class="card"><div class="small mut">For anyone not online: send them the game file, they send back a trade card.</div><div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" data-act="exportGame">Share game file</button><button class="btn sm" data-act="importCardSheet">Import trade card</button></div></div>';
   } else if (S.game.mode === 'local') {
     h += '<div class="sec">Offline players</div><div class="card"><button class="btn sm" data-act="exportGame">Share game file</button></div>';
+  }
+  if (S.game.mode === 'fb') {
+    const ems = Array.from(new Set(Object.values(S.G.contacts || {}).filter(e => typeof e === 'string' && EMAIL_RE.test(e))));
+    h += '<div class="sec">Contact</div><div class="card"><div class="small mut">' + (ems.length ? ems.length + ' player' + (ems.length === 1 ? '' : 's') + ' shared an email.' : 'No one has shared an email yet. Players can add one when they join.') + '</div>' + (ems.length ? '<button class="btn sm" style="margin-top:10px" data-act="emailAll">Email everyone</button>' : '') + '</div>';
   }
   if (m.status === 'active') {
     const qs = playerIds().filter(pid => !(S.G.players[pid] || {}).ai).map(pid => ({ pid, list: pendingFor(pid) })).filter(x => x.list.length);
@@ -1394,6 +1427,13 @@ function recapText(d) {
   return lines.join('\n');
 }
 
+function mktPill() {
+  const s = marketStatus(Date.now());
+  if (s.open) { const h = Math.floor(s.left / 60), m = s.left % 60; return '<span class="chip acc">Market open</span> closes in ' + (h ? h + 'h ' : '') + m + 'm · orders fill at today’s close'; }
+  return '<span class="chip">' + (s.pre ? 'Pre-market' : 'Market closed') + '</span> orders fill at the ' + dayLabel(s.day) + ' close (4:00 PM ET)';
+}
+setInterval(() => { const e = document.getElementById('mkt'); if (e) e.innerHTML = mktPill(); }, 30000);
+
 // ══════════════════════════════════════════
 //  ACTIONS — every data-act button lands here
 // ══════════════════════════════════════════
@@ -1464,7 +1504,8 @@ const ACT = {
   doJoin() {
     guard(async () => {
       const name = ($('#j-name').value || '').trim(); lsRawSet('ta_me', name);
-      await joinOnline($('#j-code').value, name); closeSheet();
+      const em = ($('#j-email').value || '').trim(); if (em && !EMAIL_RE.test(em)) throw new Error('That email address doesn’t look right.');
+      await joinOnline($('#j-code').value, name, em); closeSheet();
     });
   },
   doLoadFile() {
@@ -1515,6 +1556,12 @@ const ACT = {
   lookup() { doLookup(); },
   side(el) { TR.side = el.dataset.v; $('#t-side').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); tradeEstimate(); },
   recap(el) { const t = recapText(el.dataset.day); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else copyText(t); },
+  emailAll() {
+    const ems = Array.from(new Set(Object.values(S.G.contacts || {}).filter(e => typeof e === 'string' && EMAIL_RE.test(e))));
+    if (!ems.length) return toast('No emails yet', 'bad');
+    const m = META(); const body = 'Trade Arena: ' + (m ? m.name : '') + '\nJoin or open the game: ' + joinLink(S.game.code) + '\nGame code: ' + S.game.code + '\n';
+    location.href = 'mailto:?bcc=' + encodeURIComponent(ems.join(',')) + '&subject=' + encodeURIComponent('Trade Arena: ' + (m ? m.name : 'our game')) + '&body=' + encodeURIComponent(body);
+  },
   chip(el) { $('#t-tk').value = el.dataset.v; TR.d = null; doLookup(); },
   maxQty() { if (!TR.d) return toast('Look up a ticker first', 'bad'); $('#t-q').value = maxQty() || ''; tradeEstimate(); },
   placeOrder() { guard(placeOrder); },

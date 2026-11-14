@@ -24,7 +24,7 @@ function viewGame() {
   if (!m) return '<div class="wrap">' + topBar + '<div class="card mut">Loading…</div></div>';
   const tabs = [['board', '🏆', 'Board'], ['trade', '📈', 'Trade'], ['feed', '🧾', 'Feed']]; if (isHost()) tabs.push(['host', '⚙️', 'Host']);
   const body = S.tab === 'trade' ? tabTrade() : S.tab === 'feed' ? tabFeed() : S.tab === 'host' && isHost() ? tabHost() : tabBoard();
-  return '<div class="wrap">' + topBar + body + footer() + '</div><nav class="tabbar"><div class="in-bar">' + tabs.map(t => '<button data-act="tab" data-v="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '"><span>' + t[1] + '</span>' + t[2] + '</button>').join('') + '</div></nav>';
+  return '<div class="wrap">' + topBar + '<div class="mkt" id="mkt">' + mktPill() + '</div>' + body + footer() + '</div><nav class="tabbar"><div class="in-bar">' + tabs.map(t => '<button data-act="tab" data-v="' + t[0] + '" class="' + (S.tab === t[0] ? 'on' : '') + '"><span>' + t[1] + '</span>' + t[2] + '</button>').join('') + '</div></nav>';
 }
 function afterGameRender() {
   const q = $('#qr-box');
@@ -67,7 +67,7 @@ function tabBoard() {
   let spyDone = st.spy == null;
   st.rows.forEach((x, i) => {
     if (!spyDone && st.spy > x.pct) { h += benchRow(st.spy); spyDone = true; }
-    h += '<div class="lrow ' + (x.pid === me ? 'me' : '') + '" data-act="viewPlayer" data-id="' + esc(x.pid) + '" style="cursor:pointer"><span class="rk">' + (i + 1) + '</span><div><div class="nm"><span class="dot" style="background:' + x.color + '"></span>' + esc(x.name) + (x.ai ? ' <span class="chip ai">AI' + (x.model ? ' · ' + esc(x.model.split('/').pop()) : '') + '</span>' : '') + (x.pid === me ? ' <span class="chip acc">You</span>' : '') + '</div><div class="sub">' + x.npos + ' position' + (x.npos === 1 ? '' : 's') + ' · ' + money0(x.cash) + ' cash</div></div><div class="pv num"><b>' + money0(x.val) + '</b><span class="' + (x.pct >= 0 ? 'up' : 'dn') + ' small">' + pctTxt(x.pct) + '</span></div></div>';
+    h += '<div class="lrow ' + (x.pid === me ? 'me' : '') + '" data-act="viewPlayer" data-id="' + esc(x.pid) + '" style="cursor:pointer"><span class="rk">' + (i + 1) + '</span><div><div class="nm"><span class="dot" style="background:' + x.color + '"></span>' + esc(x.name) + (x.ai ? ' <span class="chip ai">AI' + (META().aiStyle ? ' · ' + esc(AI_STYLE_LABEL[META().aiStyle] || '') : (x.model ? ' · ' + esc(x.model.split('/').pop()) : '')) + '</span>' : '') + (x.pid === me ? ' <span class="chip acc">You</span>' : '') + '</div><div class="sub">' + x.npos + ' position' + (x.npos === 1 ? '' : 's') + ' · ' + money0(x.cash) + ' cash</div></div><div class="pv num"><b>' + money0(x.val) + '</b><span class="' + (x.pct >= 0 ? 'up' : 'dn') + ' small">' + pctTxt(x.pct) + '</span></div></div>';
   });
   if (!spyDone) h += benchRow(st.spy);
   h += '</div>';
@@ -177,6 +177,10 @@ function tabHost() {
     h += '<div class="sec">Offline players</div><div class="card"><div class="small mut">For anyone not online: send them the game file, they send back a trade card.</div><div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" data-act="exportGame">Share game file</button><button class="btn sm" data-act="importCardSheet">Import trade card</button></div></div>';
   } else if (S.game.mode === 'local') {
     h += '<div class="sec">Offline players</div><div class="card"><button class="btn sm" data-act="exportGame">Share game file</button></div>';
+  }
+  if (S.game.mode === 'fb') {
+    const ems = Array.from(new Set(Object.values(S.G.contacts || {}).filter(e => typeof e === 'string' && EMAIL_RE.test(e))));
+    h += '<div class="sec">Contact</div><div class="card"><div class="small mut">' + (ems.length ? ems.length + ' player' + (ems.length === 1 ? '' : 's') + ' shared an email.' : 'No one has shared an email yet. Players can add one when they join.') + '</div>' + (ems.length ? '<button class="btn sm" style="margin-top:10px" data-act="emailAll">Email everyone</button>' : '') + '</div>';
   }
   if (m.status === 'active') {
     const qs = playerIds().filter(pid => !(S.G.players[pid] || {}).ai).map(pid => ({ pid, list: pendingFor(pid) })).filter(x => x.list.length);
@@ -342,3 +346,10 @@ function recapText(d) {
   lines.push('', 'Join the next game: ' + location.origin + location.pathname.replace(/app\/?$/, ''));
   return lines.join('\n');
 }
+
+function mktPill() {
+  const s = marketStatus(Date.now());
+  if (s.open) { const h = Math.floor(s.left / 60), m = s.left % 60; return '<span class="chip acc">Market open</span> closes in ' + (h ? h + 'h ' : '') + m + 'm · orders fill at today’s close'; }
+  return '<span class="chip">' + (s.pre ? 'Pre-market' : 'Market closed') + '</span> orders fill at the ' + dayLabel(s.day) + ' close (4:00 PM ET)';
+}
+setInterval(() => { const e = document.getElementById('mkt'); if (e) e.innerHTML = mktPill(); }, 30000);

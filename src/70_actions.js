@@ -68,7 +68,8 @@ const ACT = {
   doJoin() {
     guard(async () => {
       const name = ($('#j-name').value || '').trim(); lsRawSet('ta_me', name);
-      await joinOnline($('#j-code').value, name); closeSheet();
+      const em = ($('#j-email').value || '').trim(); if (em && !EMAIL_RE.test(em)) throw new Error('That email address doesn’t look right.');
+      await joinOnline($('#j-code').value, name, em); closeSheet();
     });
   },
   doLoadFile() {
@@ -119,6 +120,12 @@ const ACT = {
   lookup() { doLookup(); },
   side(el) { TR.side = el.dataset.v; $('#t-side').querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el)); tradeEstimate(); },
   recap(el) { const t = recapText(el.dataset.day); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else copyText(t); },
+  emailAll() {
+    const ems = Array.from(new Set(Object.values(S.G.contacts || {}).filter(e => typeof e === 'string' && EMAIL_RE.test(e))));
+    if (!ems.length) return toast('No emails yet', 'bad');
+    const m = META(); const body = 'Trade Arena: ' + (m ? m.name : '') + '\nJoin or open the game: ' + joinLink(S.game.code) + '\nGame code: ' + S.game.code + '\n';
+    location.href = 'mailto:?bcc=' + encodeURIComponent(ems.join(',')) + '&subject=' + encodeURIComponent('Trade Arena: ' + (m ? m.name : 'our game')) + '&body=' + encodeURIComponent(body);
+  },
   chip(el) { $('#t-tk').value = el.dataset.v; TR.d = null; doLookup(); },
   maxQty() { if (!TR.d) return toast('Look up a ticker first', 'bad'); $('#t-q').value = maxQty() || ''; tradeEstimate(); },
   placeOrder() { guard(placeOrder); },

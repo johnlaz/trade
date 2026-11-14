@@ -27,6 +27,13 @@
             }
           }
         },
+        "contacts": {
+          ".read": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid",
+          "$pid": {
+            ".write": "auth != null && (root.child('games/' + $code + '/meta/hostUid').val() === auth.uid || $pid === auth.uid)",
+            ".validate": "newData.isString() && newData.val().length <= 100 && newData.val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/)"
+          }
+        },
         "portfolios": { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },
         "fills":      { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },
         "prices":     { ".read": "auth != null", ".write": "auth != null && root.child('games/' + $code + '/meta/hostUid').val() === auth.uid" },

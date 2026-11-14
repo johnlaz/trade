@@ -74,6 +74,7 @@ Daily bars come from Yahoo Finance's public chart endpoint through free CORS pro
 
 - No accounts. Online players are signed in anonymously by Firebase, and a name is all that is shown.
 - Game data (players, portfolios, fills, prices, daily equity) lives in your Firebase Realtime Database under `games/{CODE}`. Pending orders are readable only by their owner and the host.
+- Emails are optional. They are stored in a separate place only the host can read, never in the player list, and the host's "Email everyone" button puts them in BCC.
 - The Groq key, model choice, watchlist and any proxy URL stay in the host's browser and are never written to Firebase or to exports.
 - Delete a game from Host → Danger zone to remove its data from Firebase.
 
@@ -99,6 +100,7 @@ Run `./build.sh` to rebuild `app/index.html` from `src/`, `node test/engine.test
 
 ## Changelog
 
+- **1.5.0**: optional player email (host-only, BCC "Email everyone"); market status pill with countdown and US holidays; AI style option ("No style" by default); AI watchlist expanded to about 55 tickers; AI trade notes now name the idea behind each trade.
 - **1.4.0**: rule presets (Casual, Stock-picker, Diversify, Beginner, Sprint); order confirmation and after-4pm warning; quick-pick ticker chips; sell hint; allocation bar; "days ready to settle" badge; share daily recap; model choice in Settings now saves; fixed a stale-ticker lookup that could queue the wrong stock.
 - **1.3.2**: prices now go through a Cloudflare Worker first (fast and reliable), with the free proxies as fallback.
 - **1.3.1**: dropped the dead corsproxy.io route, smaller default AI watchlist, added docs/worker.js for a personal price proxy.

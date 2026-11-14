@@ -101,6 +101,7 @@ function yahoo(t) {
   ok(/AI Trader/.test(board) && /John/.test(board) && /Sam/.test(board), 'leaderboard lists all three players');
   ok(/SPY buy/.test(board), 'benchmark row shown');
   // inspect state
+  ok(await page.locator('#mkt').count() === 1, 'market status pill shown');
   const rc = await page.evaluate(() => recapText(Object.keys(S.G.fills)[0]));
   ok(/Trade Arena/.test(rc) && /1\. /.test(rc) && /Trades:/.test(rc), 'recap text builds with standings and trades');
   await page.click('[data-act=viewPlayer]'); await page.waitForTimeout(300);
